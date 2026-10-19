@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 自販機の本体（青） -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#FF1E4FA8" />
+    <stroke android:width="5dp" android:color="#FF0D2C66" />
+    <corners android:radius="16dp" />
+</shape>

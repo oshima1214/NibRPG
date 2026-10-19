@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- エンドロール：紺の背景に、文字が下から上へ流れる -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/nib_navy"
+    tools:context=".EndrollActivity">
+
+    <!-- 文字が流れる場所（ここを押している間は早送り）
+         ScrollViewにしているのは、画面より長い文字のかたまりを全部表示するため。
+         指でのスクロールはJavaで止めている -->
+    <ScrollView
+        android:id="@+id/stage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:overScrollMode="never"
+        android:scrollbars="none">
+
+        <!-- 流れる文字のかたまり（位置はJavaで動かす） -->
+        <LinearLayout
+            android:id="@+id/credits"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <!-- ゲームの名前 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-black"
+                android:shadowColor="@color/nib_cyan"
+                android:shadowDx="5"
+                android:shadowDy="5"
+                android:shadowRadius="1"
+                android:text="@string/end_game_title"
+                android:textColor="@color/white"
+                android:textSize="48sp"
+                android:textStyle="bold|italic" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="80dp" />
+
+            <TextView
+                style="@style/EndHead"
+                android:text="@string/end_head_staff" />
+
+            <TextView
+                style="@style/EndLabel"
+                android:text="@string/end_label_staff" />
+
+            <TextView
+                style="@style/EndName"
+                android:text="@string/end_staff1" />
+
+            <TextView
+                style="@style/EndName"
+                android:text="@string/end_staff2" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="80dp" />
+
+            <TextView
+                style="@style/EndHead"
+                android:text="@string/end_head_tools" />
+
+            <TextView
+                style="@style/EndLabel"
+                android:text="@string/end_label_dev" />
+
+            <TextView
+                style="@style/EndName"
+                android:text="@string/end_tool_dev" />
+
+            <TextView
+                style="@style/EndLabel"
+                android:text="@string/end_label_ai" />
+
+            <TextView
+                style="@style/EndName"
+                android:text="@string/end_tool_ai1" />
+
+            <TextView
+                style="@style/EndName"
+                android:text="@string/end_tool_ai2" />
+
+            <TextView
+                style="@style/EndName"
+                android:text="@string/end_tool_ai3" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="80dp" />
+
+            <TextView
+                style="@style/EndHead"
+                android:text="@string/end_head_thanks" />
+
+            <TextView
+                style="@style/EndName"
+                android:text="@string/end_thanks1" />
+
+            <TextView
+                style="@style/EndName"
+                android:text="@string/end_thanks2" />
+
+            <TextView
+                style="@style/EndName"
+                android:text="@string/end_thanks3" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="80dp" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="80dp" />
+
+            <!-- 最後：ここが画面のまん中に来たら止まる -->
+            <LinearLayout
+                android:id="@+id/finalBlock"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/cert_card"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingHorizontal="40dp"
+                android:paddingVertical="24dp">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="80dp"
+                    android:adjustViewBounds="true"
+                    android:contentDescription="@string/app_name"
+                    android:src="@drawable/nib_logo" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/end_last"
+                    android:textColor="@color/nib_navy"
+                    android:textSize="28sp"
+                    android:textStyle="bold|italic" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- 右上：スキップボタン -->
+    <TextView
+        android:id="@+id/btnSkip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_margin="16dp"
+        android:background="@drawable/rpg_window"
+        android:clickable="true"
+        android:focusable="true"
+        android:paddingHorizontal="20dp"
+        android:paddingVertical="8dp"
+        android:text="@string/end_skip"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <!-- 左下：操作の説明 -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:layout_margin="16dp"
+        android:text="@string/end_hint"
+        android:textColor="@color/nib_cyan"
+        android:textSize="12sp" />
+
+</FrameLayout>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- ゲーム用の色 -->
+    <color name="title_bg">#FF0D1B4C</color>   <!-- タイトル：夜空の青 -->
+    <color name="clear_bg">#FF5A2A0C</color>   <!-- クリア：夕焼けの茶色 -->
+    <color name="over_bg">#FF111111</color>    <!-- 失敗：ほぼ黒 -->
+    <color name="over1_bg">#FF2E1430</color>   <!-- 失敗・1人目・2F（S先生・ショート）：深い紫 -->
+    <color name="over2_bg">#FF1F2E14</color>   <!-- 失敗・2人目・3F（E先生）：深緑 -->
+    <color name="over3_bg">#FF102438</color>   <!-- 失敗・3人目（S先生・大きめ）：深い青 -->
+    <color name="over4_bg">#FF111111</color>   <!-- 失敗・校長：ほぼ黒 -->
+    <color name="game_bg">#FF1E3A1E</color>    <!-- 仮のゲーム画面：深緑 -->
+    <color name="rpg_yellow">#FFFFD54F</color>
+    <color name="rpg_red">#FFFF5252</color>
+    <color name="rpg_gray">#FFAAAAAA</color>
+
+    <!-- 学校ロゴの色 -->
+    <color name="nib_navy">#FF0F3193</color>   <!-- 紺 -->
+    <color name="nib_cyan">#FF34B3D3</color>   <!-- 水色 -->
+    <color name="nib_red">#FFFE0000</color>    <!-- 赤 -->
+
+    <!-- お店の背景 -->
+    <color name="shop_weapon_bg">#FF3B2414</color>   <!-- 武器屋：こげ茶 -->
+    <color name="shop_item_bg">#FF143B24</color>     <!-- 道具屋：深緑 -->
+
+    <!-- 戦闘画面 -->
+    <color name="battle_bg">#FF1B1030</color>         <!-- 背景：深い紫紺 -->
+    <color name="battle_hp_green">#FF66BB6A</color>   <!-- 自分のHPバー -->
+
+    <!-- 自販機の画面 -->
+    <color name="vending_room">#FF0B1A33</color>       <!-- まわりの暗い背景 -->
+    <color name="vending_led_green">#FF39FF6A</color>  <!-- 光る緑の文字 -->
+</resources>

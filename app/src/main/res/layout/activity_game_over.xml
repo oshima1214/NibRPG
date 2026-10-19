@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/over_bg"
+    android:gravity="center"
+    android:orientation="horizontal"
+    tools:context=".GameOverActivity">
+
+    <!-- 左：負けた先生の絵（Javaで先生ごとに書きかえる） -->
+    <ImageView
+        android:id="@+id/imgTeacher"
+        android:layout_width="wrap_content"
+        android:layout_height="260dp"
+        android:layout_marginEnd="40dp"
+        android:adjustViewBounds="true"
+        android:contentDescription="@string/over4_name"
+        android:src="@drawable/koutyou_sensei" />
+
+    <!-- 右：GAME OVER・セリフ・ボタン -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical">
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:shadowColor="#FF550000"
+            android:shadowDx="5"
+            android:shadowDy="5"
+            android:shadowRadius="1"
+            android:text="@string/over_logo"
+            android:textColor="@color/rpg_red"
+            android:textSize="64sp"
+            android:textStyle="bold" />
+
+        <!-- だれに負けたか（Javaで先生ごとに書きかえる） -->
+        <TextView
+            android:id="@+id/txtTeacher"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@string/over4_name"
+            android:textColor="@color/rpg_gray"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <!-- 会話ウィンドウ（Javaで先生ごとに書きかえる） -->
+        <TextView
+            android:id="@+id/txtMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/rpg_window"
+            android:lineSpacingExtra="6dp"
+            android:padding="20dp"
+            android:text="@string/over4_msg"
+            android:textColor="@color/white"
+            android:textSize="20sp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/btnRetry"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/rpg_window"
+                android:clickable="true"
+                android:focusable="true"
+                android:fontFamily="monospace"
+                android:paddingHorizontal="32dp"
+                android:paddingVertical="12dp"
+                android:text="@string/retry"
+                android:textColor="@color/white"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:layout_marginEnd="24dp" />
+            <TextView
+                android:id="@+id/btnTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/rpg_window"
+                android:clickable="true"
+                android:focusable="true"
+                android:fontFamily="monospace"
+                android:paddingHorizontal="32dp"
+                android:paddingVertical="12dp"
+                android:text="@string/to_title"
+                android:textColor="@color/white"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

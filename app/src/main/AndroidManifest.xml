@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.NibRPG">
+        <!-- タイトル画面：起動時に最初に出る -->
+        <activity
+            android:name=".TitleActivity"
+            android:exported="true"
+            android:screenOrientation="sensorLandscape">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity> <!-- ゲーム本編 -->
+        <activity
+            android:name=".MainActivity"
+            android:screenOrientation="sensorLandscape" /> <!-- ゲームクリア画面 -->
+        <activity
+            android:name=".ClearActivity"
+            android:screenOrientation="sensorLandscape" /> <!-- 攻略失敗画面 -->
+        <activity
+            android:name=".GameOverActivity"
+            android:screenOrientation="sensorLandscape" />
+
+        <!-- エンドロール -->
+        <activity
+            android:name=".EndrollActivity"
+            android:screenOrientation="sensorLandscape" />
+
+        <!-- 武器屋・道具屋 -->
+        <activity
+            android:name=".ShopActivity"
+            android:screenOrientation="sensorLandscape" />
+
+        <!-- 戦闘画面 -->
+        <activity
+            android:name=".BattleActivity"
+            android:screenOrientation="sensorLandscape" />
+
+        <!-- 自販機 -->
+        <activity
+            android:name=".VendingActivity"
+            android:screenOrientation="sensorLandscape" />
+    </application>
+
+</manifest>

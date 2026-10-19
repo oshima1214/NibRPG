@@ -1,0 +1,156 @@
+<resources>
+    <string name="app_name">NibRPG</string>
+
+    <!-- タイトル画面 -->
+    <string name="title_logo">RPG</string>
+    <string name="title_sub">― 立ちはだかる先生たちを突破せよ！ ―</string>
+    <string name="title_start">▶ はじめる</string>
+
+    <!-- マップ画面 -->
+    <string name="floor1">1F 購買フロア</string>
+    <string name="floor2">2F</string>
+    <string name="floor3">3F</string>
+    <string name="floor4">4F</string>
+    <string name="floor5">5F 校長室</string>
+
+    <string name="teacher1">S先生</string>
+    <string name="teacher2">E先生</string>
+    <string name="teacher3">S先生</string>
+    <string name="teacher4">校長先生</string>
+
+    <string name="meet_teacher">%1$sがあらわれた！\n（戦闘はまだないので、結果を選んでください）</string>
+    <string name="win_teacher">%1$sに勝った！ %2$d円を手に入れた。\n先へ進めるようになった。</string>
+    <string name="btn_close">とじる</string>
+    <string name="btn_win">勝ったことにする</string>
+    <string name="btn_lose">負けたことにする</string>
+    <string name="stairs_msg">階段だ。何階へ行く？</string>
+    <string name="floor_short">%1$dF</string>
+    <string name="stairs_locked">%1$sに勝たないと、上の階へは行けない…</string>
+    <string name="btn_up">上の階へ</string>
+    <string name="btn_down">下の階へ</string>
+    <string name="btn_cancel">やめる</string>
+
+    <!-- クリア画面 -->
+    <string name="clear_logo">GAME CLEAR</string>
+    <string name="clear_cert_title">卒 業 証 書</string>
+    <string name="clear_msg">あなたは4人の先生との戦いに勝ち\nみごと卒業したことを ここに証します</string>
+    <string name="clear_sign">Nib RPG 校長</string>
+    <string name="to_title">▶ タイトルへ</string>
+
+    <!-- 攻略失敗画面（共通） -->
+    <string name="over_logo">GAME OVER</string>
+    <string name="retry">▶ もう一度</string>
+
+    <!-- 攻略失敗画面：1人目・2F（ショートヘアの女の先生） -->
+    <string name="over1_name">S先生に負けた…</string>
+    <string name="over1_msg">S先生「放課後、プリント100枚ね♪」\nプリントが山のように積まれた…</string>
+
+    <!-- 攻略失敗画面：2人目・3F（パーマの女の先生） -->
+    <string name="over2_name">E先生に負けた…</string>
+    <string name="over2_msg">E先生「根性が足りません！ 過去問10年分解きなおし！」\n指がもう動かない…</string>
+
+    <!-- 攻略失敗画面：3人目・4F（少し大きめ・短髪の男の先生） -->
+    <string name="over3_name">S先生に負けた…</string>
+    <string name="over3_msg">S先生「遅い！ 最初からやり直し！」\nスタート地点に戻された…</string>
+
+    <!-- 攻略失敗画面：4人目・5F（校長） -->
+    <string name="over4_name">校長先生に負けた…</string>
+    <string name="over4_msg">校長「まだまだだな。明日から毎朝、校長室に来なさい」\n朝のあいさつ当番が決まった…</string>
+
+    <!-- クリア画面のボタン -->
+    <string name="to_endroll">▶ エンドロールへ</string>
+
+    <!-- エンドロール -->
+    <string name="end_skip">SKIP ▶▶</string>
+    <string name="end_hint">画面を押している間、早送り</string>
+    <string name="end_game_title">Nib RPG</string>
+
+    <string name="end_head_staff">― 制作スタッフ ―</string>
+    <string name="end_label_staff">制作</string>
+    <string name="end_staff1">大島</string>
+    <string name="end_staff2">重田</string>
+
+    <string name="end_head_tools">― 使った道具 ―</string>
+    <string name="end_label_dev">開発</string>
+    <string name="end_tool_dev">Android Studio</string>
+    <string name="end_label_ai">AI</string>
+    <string name="end_tool_ai1">Claude</string>
+    <string name="end_tool_ai2">ChatGPT</string>
+    <string name="end_tool_ai3">Gemini（Nano Banana）</string>
+
+    <string name="end_head_thanks">― Special Thanks ―</string>
+    <string name="end_thanks1">日本海情報ビジネス専門学校の先生方</string>
+    <string name="end_thanks2">クラスのみんな</string>
+    <string name="end_thanks3">そして、遊んでくれたあなた</string>
+
+    <string name="end_last">Thank you for playing!</string>
+
+    <!-- マップ画面の状態表示 -->
+    <string name="status_map">所持金 %1$d円\nHP %2$d / %3$d\n攻撃力 %4$d</string>
+
+    <!-- お店 -->
+    <string name="shop_weapon_title">武器屋</string>
+    <string name="shop_item_title">道具屋</string>
+    <string name="shop_weapon_hello">武器屋「いらっしゃい！ 先生と戦うなら、いい武器がいるよ」</string>
+    <string name="shop_item_hello">道具屋「いらっしゃいませ。回復の道具はいかが？」</string>
+    <string name="shop_exit">▶ 店を出る</string>
+    <string name="shop_buy">買う</string>
+    <string name="shop_equip">装備する</string>
+    <string name="shop_equipped">装備中</string>
+    <string name="shop_no_money">「お金が足りないよ…」</string>
+    <string name="shop_full">「それ以上は持てないよ」</string>
+    <string name="shop_bought">「%1$sだね。まいどあり！」</string>
+    <string name="shop_bought_equip">「%1$sだね。まいどあり！」\n%1$sを装備した。</string>
+    <string name="shop_equip_done">%1$sに持ちかえた。</string>
+    <string name="price">%1$d円</string>
+    <string name="goods_count">%1$s（持っている数：%2$d）</string>
+    <string name="status_shop">所持金 %1$d円\nHP %2$d / %3$d\n攻撃力 %4$d（%5$s）</string>
+    <string name="status_bare">素手</string>
+
+    <!-- 戦闘（ことば並べバトル） -->
+    <string name="battle_appear">%1$sがあらわれた！</string>
+    <string name="battle_you">あなた</string>
+    <string name="battle_hp">%1$d / %2$d</string>
+    <string name="battle_hint">ヒント：%1$s</string>
+    <string name="battle_backspace">← 1文字けす</string>
+    <string name="battle_reset">やり直し</string>
+    <string name="battle_wrong">ちがうみたい…もう一度！</string>
+    <string name="battle_correct">正解！ %1$sに%2$dのダメージ！</string>
+    <string name="battle_critical">はやい！ クリティカル！\n%1$sに%2$dのダメージ！</string>
+    <string name="battle_timeout">時間切れ！ 正解は「%1$s」\n精神的ダメージ %2$d！</string>
+    <string name="battle_item">%1$s ×%2$d</string>
+    <string name="battle_item_used">%1$sを使った！ HPが%2$d回復した</string>
+    <string name="battle_no_escape">先生からは逃げられない！</string>
+    <string name="battle_teacher_lose">「…やるじゃない。今日はこのくらいにしておくわ」</string>
+    <string name="battle_win">%1$sに勝った！\n%2$d円を手に入れた。</string>
+    <string name="battle_to_map">▶ マップへもどる</string>
+
+    <!-- 時間切れのときの先生のひとこと -->
+    <string-array name="taunts_2f">
+        <item>「時間切れ〜♪ プリント追加ね」</item>
+        <item>「あら、まだ考えてたの？」</item>
+        <item>「その程度じゃ放課後は帰れないわよ♪」</item>
+        <item>「もっと頭をやわらかく！」</item>
+    </string-array>
+    <string-array name="taunts_common">
+        <item>「遅い！」</item>
+        <item>「まだまだだな」</item>
+        <item>「しっかり考えなさい」</item>
+    </string-array>
+
+    <!-- 自販機 -->
+    <string name="vending_ask">自販機だ。何か買う？</string>
+    <string name="btn_yes">はい</string>
+    <string name="btn_no">いいえ</string>
+    <string name="vending_brand">★ Nib ドリンク＆フード ★</string>
+    <string name="vending_slot">取り出し口</string>
+    <string name="vending_coin">COIN</string>
+    <string name="vending_exit">▶ もどる</string>
+    <string name="vending_led">所持金\n%1$d円\n\nHP\n%2$d/%3$d</string>
+    <string name="vending_push">押す</string>
+    <string name="vending_soldout">売切</string>
+    <string name="vending_have">持っている ×%1$d</string>
+    <string name="vending_get">ガコン！ %1$sが出てきた</string>
+    <string name="vending_no_money">お金が足りない…</string>
+    <string name="vending_full">もうこれ以上は持てない…</string>
+</resources>

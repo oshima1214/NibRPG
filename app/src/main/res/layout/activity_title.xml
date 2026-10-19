@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:gravity="center"
+    android:orientation="vertical"
+    tools:context=".TitleActivity">
+
+    <!-- 学校のロゴ -->
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="110dp"
+        android:adjustViewBounds="true"
+        android:contentDescription="@string/app_name"
+        android:src="@drawable/nib_logo" />
+
+    <!-- 「RPG」の文字（ロゴと同じ紺色・ななめ・水色の影） -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="sans-serif-black"
+        android:letterSpacing="0.15"
+        android:shadowColor="@color/nib_cyan"
+        android:shadowDx="5"
+        android:shadowDy="5"
+        android:shadowRadius="1"
+        android:text="@string/title_logo"
+        android:textColor="@color/nib_navy"
+        android:textSize="60sp"
+        android:textStyle="bold|italic" />
+
+    <!-- ロゴの3色を使った線（赤・水色・紺） -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="6dp"
+        android:layout_marginTop="2dp"
+        android:orientation="horizontal">
+
+        <View
+            android:layout_width="30dp"
+            android:layout_height="match_parent"
+            android:background="@color/nib_red" />
+
+        <View
+            android:layout_width="30dp"
+            android:layout_height="match_parent"
+            android:background="@color/nib_cyan" />
+
+        <View
+            android:layout_width="180dp"
+            android:layout_height="match_parent"
+            android:background="@color/nib_navy" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="@string/title_sub"
+        android:textColor="@color/nib_navy"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <!-- はじめるボタン（点滅はTitleActivity.javaで設定） -->
+    <TextView
+        android:id="@+id/btnStart"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/nib_button"
+        android:clickable="true"
+        android:focusable="true"
+        android:paddingHorizontal="40dp"
+        android:paddingVertical="12dp"
+        android:text="@string/title_start"
+        android:textColor="@color/white"
+        android:textSize="22sp"
+        android:textStyle="bold" />
+
+</LinearLayout>
