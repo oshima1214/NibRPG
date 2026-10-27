@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 事務員さんのふきだし -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#FFFFFFFF" />
+    <stroke android:width="2dp" android:color="#FF0F3193" />
+    <corners android:radius="12dp" />
+</shape>

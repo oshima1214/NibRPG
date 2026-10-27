@@ -56,6 +56,12 @@ public class GameOverActivity extends AppCompatActivity {
                 message = R.string.over3_msg;
                 bg = R.color.over3_bg;
                 break;
+            case BattleData.BOSS_GAME_OVER: // 理事長
+                image = R.drawable.boss_rijicho;
+                name = R.string.over5_name;
+                message = R.string.over5_msg;
+                bg = R.color.over5_bg;
+                break;
             default:
                 image = R.drawable.koutyou_sensei;
                 name = R.string.over4_name;
@@ -72,9 +78,15 @@ public class GameOverActivity extends AppCompatActivity {
 
         findViewById(R.id.btnRetry).setOnClickListener(v -> {
             GameState.hp = GameState.maxHp; // HPを全部回復してから再挑戦
+            GameState.save(this);
             goTo(MainActivity.class);
         });
-        findViewById(R.id.btnTitle).setOnClickListener(v -> goTo(TitleActivity.class));
+        findViewById(R.id.btnTitle).setOnClickListener(v -> {
+            // 続きは、タイトルの「つづきから」で遊べる（負けた場所から、HPは全部回復）
+            GameState.hp = GameState.maxHp;
+            GameState.save(this);
+            goTo(TitleActivity.class);
+        });
     }
 
     // 別の画面へ移動して、今の画面は閉じる

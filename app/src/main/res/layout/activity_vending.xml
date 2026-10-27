@@ -25,26 +25,31 @@
             android:layout_weight="3"
             android:orientation="vertical">
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="@string/vending_brand"
-                android:textColor="@color/white"
-                android:textSize="15sp"
-                android:textStyle="bold|italic" />
-
             <!-- ショーケース（商品はJavaで並べる） -->
-            <LinearLayout
-                android:id="@+id/slotRow"
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_marginTop="6dp"
                 android:layout_weight="1"
                 android:background="@drawable/vending_window"
-                android:baselineAligned="false"
-                android:orientation="horizontal"
-                android:padding="8dp" />
+                android:padding="4dp">
+
+                <LinearLayout
+                    android:id="@+id/slotRow"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal"
+                    android:padding="6dp" />
+
+                <!-- ガラスに映る光（ななめの帯） -->
+                <View
+                    android:layout_width="56dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="70dp"
+                    android:background="#16FFFFFF"
+                    android:rotation="18"
+                    android:scaleY="1.4" />
+            </FrameLayout>
 
             <!-- 取り出し口 -->
             <TextView
@@ -115,5 +120,73 @@
                 android:textStyle="bold" />
         </LinearLayout>
     </LinearLayout>
+
+
+    <!-- 買ったときのポップアップ（ふだんはかくしておく） -->
+    <FrameLayout
+        android:id="@+id/popup"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#AA000000"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone">
+
+        <!-- 後ろの光 -->
+        <View
+            android:id="@+id/popGlow"
+            android:layout_width="260dp"
+            android:layout_height="260dp"
+            android:layout_gravity="center"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/pop_glow" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/imgPop"
+                android:layout_width="wrap_content"
+                android:layout_height="170dp"
+                android:adjustViewBounds="true"
+                android:contentDescription="@null" />
+
+            <!-- 商品名 -->
+            <TextView
+                android:id="@+id/txtPop"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:fontFamily="@font/dotgothic16"
+                android:shadowColor="#FF000000"
+                android:shadowDx="2"
+                android:shadowDy="2"
+                android:shadowRadius="0.01"
+                android:textColor="@color/white"
+                android:textSize="28sp" />
+
+            <TextView
+                android:id="@+id/txtPopSub"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/dotgothic16"
+                android:text="@string/vending_pop_sub"
+                android:textColor="#FFDCE6F5"
+                android:textSize="16sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:fontFamily="@font/dotgothic16"
+                android:text="@string/vending_pop_tap"
+                android:textColor="@color/rpg_gray"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </FrameLayout>
 
 </FrameLayout>

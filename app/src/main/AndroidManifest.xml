@@ -47,6 +47,27 @@
             android:name=".BattleActivity"
             android:screenOrientation="sensorLandscape" />
 
+        <!-- キャラクリエイト（タイトルの「見た目を変える」から開く） -->
+        <activity
+            android:name=".CharacterCreate"
+            android:screenOrientation="sensorLandscape" />
+
+        <!-- メニュー（ステータス・持ち物・記録） -->
+        <activity
+            android:name=".StatusActivity"
+            android:screenOrientation="sensorLandscape" />
+
+        <!-- 3F・4F・5Fの戦闘画面（穴うめ・板書うつし・よけゲーム） -->
+        <activity
+            android:name=".FillBattleActivity"
+            android:screenOrientation="sensorLandscape" />
+        <activity
+            android:name=".MemoryBattleActivity"
+            android:screenOrientation="sensorLandscape" />
+        <activity
+            android:name=".DodgeBattleActivity"
+            android:screenOrientation="sensorLandscape" />
+
         <!-- 自販機 -->
         <activity
             android:name=".VendingActivity"

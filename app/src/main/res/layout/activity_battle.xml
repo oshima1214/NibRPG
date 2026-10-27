@@ -8,12 +8,19 @@
     android:background="@color/battle_bg"
     tools:context=".BattleActivity">
 
+    <!-- 上：先生（左）とゲーム（右）、下：先生のひとこと -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:baselineAligned="false"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:padding="12dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:baselineAligned="false"
+        android:orientation="horizontal">
 
         <!-- 左：先生 -->
         <LinearLayout
@@ -55,16 +62,6 @@
                 android:adjustViewBounds="true"
                 android:contentDescription="@null" />
 
-            <!-- 先生のひとこと -->
-            <TextView
-                android:id="@+id/txtLine"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/rpg_window"
-                android:minLines="2"
-                android:padding="8dp"
-                android:textColor="@color/white"
-                android:textSize="13sp" />
         </LinearLayout>
 
         <!-- 右：自分のHP・残り時間・問題・札 -->
@@ -211,6 +208,24 @@
                 </HorizontalScrollView>
             </LinearLayout>
         </LinearLayout>
+    </LinearLayout>
+
+        <!-- 先生のひとこと（画面の下に、横いっぱいの大きなウィンドウで） -->
+        <TextView
+            android:id="@+id/txtLine"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/rpg_window"
+            android:gravity="center_vertical"
+            android:lineSpacingExtra="2dp"
+            android:maxLines="2"
+            android:minHeight="48dp"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:textStyle="bold" />
     </LinearLayout>
 
     <!-- ダメージを受けたとき、一瞬赤くするための幕 -->

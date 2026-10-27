@@ -92,6 +92,17 @@ public class EndrollActivity extends AppCompatActivity {
         if (finished) return;
         finished = true;
         handler.removeCallbacksAndMessages(null);
+        if (GameState.playing) {
+            // 校長に勝ったあと：理事長室の鍵をもらう。
+            // 続きは1Fのはじめの場所から（5Fから下りてくるのは大変なので）
+            GameState.bossKey = true;
+            GameState.floor = 0;
+            GameState.px = -1;  // -1 にすると、MainActivity で 1F の P の位置になる
+            GameState.py = -1;
+            GameState.dir = CharacterSprite.FRONT;
+            GameState.save(this);
+            GameState.keyNotice = true; // タイトルで知らせる
+        }
         startActivity(new Intent(this, TitleActivity.class));
         finish();
     }

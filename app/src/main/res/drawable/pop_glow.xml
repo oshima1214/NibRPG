@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ポップアップの後ろの光（まん中が明るい黄色の丸） -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <gradient
+        android:centerColor="#88FFF59D"
+        android:endColor="#00FFF59D"
+        android:gradientRadius="130dp"
+        android:startColor="#FFFFFDE7"
+        android:type="radial" />
+</shape>

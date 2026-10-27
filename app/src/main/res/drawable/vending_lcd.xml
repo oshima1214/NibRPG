@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 値段の表示（黒い画面に青い文字） -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#FF0A1428" />
+    <stroke android:width="1dp" android:color="#FF3C5A8C" />
+    <corners android:radius="4dp" />
+</shape>

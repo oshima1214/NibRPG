@@ -5,6 +5,124 @@
     <string name="title_logo">RPG</string>
     <string name="title_sub">― 立ちはだかる先生たちを突破せよ！ ―</string>
     <string name="title_start">▶ はじめる</string>
+    <string name="title_continue">▶ つづきから</string>
+    <string name="title_restart">はじめから</string>
+    <string name="title_chara">見た目を変える</string>
+    <!-- キャラクリエイト（CharacterCreate） -->
+    <string name="character">キャラクター作成</string>
+    <string name="leftLabel">◀</string>
+    <string name="center">正面</string>
+    <string name="rightLabel">▶</string>
+    <string name="backTotitle">タイトルへ</string>
+    <string name="random">ランダム</string>
+    <string name="decition">決定</string>
+    <string name="character_create_info">上のタブで、髪型・服・色を変えられます。\n「決定」を押すと保存されます。</string>
+    <string name="menu_name_place">%1$s　｜　%2$s</string>
+    <!-- 実績 -->
+    <string name="ach_unlocked">実績解除！</string>
+    <string-array name="ach_titles">
+        <item>どうやってここまで...？</item>
+        <item>飲まず食わず</item>
+        <item>拳で十分</item>
+        <item>経済を回す者</item>
+        <item>倹約家</item>
+        <item>拾いもの名人</item>
+        <item>事務室の常連</item>
+        <item>首の皮一枚</item>
+        <item>全部ください</item>
+        <item>真の卒業生</item>
+    </string-array>
+    <string-array name="ach_descs">
+        <item>道具（自販機の物）も備品（受付の物）も使わず、ダメージを1回も受けずに、ゲームをクリアする</item>
+        <item>道具（自販機の物）を1回も使わずに、ゲームをクリアする</item>
+        <item>備品（受付の物）で1回も攻撃せずに、ゲームをクリアする。素手で戦おう</item>
+        <item>受付と自販機で、お金を合計2000円以上使ってゲームをクリアする</item>
+        <item>受付と自販機で使ったお金を、合計500円以下にしてゲームをクリアする</item>
+        <item>各階に1つずつある落とし物を、5つ全部拾ってからゲームをクリアする</item>
+        <item>1Fの受付で、事務員さんの「話を聞く」を10回えらぶ</item>
+        <item>HPが残り9以下の状態で、先生に勝つ</item>
+        <item>1Fの自販機で、4種類の商品をすべて1回以上買う</item>
+        <item>2Fの理事長室で、理事長の「最後の試験」に合格する</item>
+    </string-array>
+    <string name="menu_ach">実績</string>
+    <string name="menu_howto_tab">遊び方</string>
+    <string name="menu_title_tab">タイトルへ</string>
+    <string name="ach_condition">条件：%1$s</string>
+    <string name="ach_done">✔ 解除ずみ</string>
+    <string name="ach_used">使った</string>
+    <string name="ach_not_used">まだ使っていない</string>
+    <string name="ach_prog_bare">今回のプレイ：道具 %1$s ／ 備品 %2$s ／ ダメージ %3$s</string>
+    <string name="ach_damaged">受けた</string>
+    <string name="ach_not_damaged">まだ受けていない</string>
+    <string name="ach_prog_item">今回のプレイ：道具 %1$s</string>
+    <string name="ach_prog_weapon">今回のプレイ：備品 %1$s</string>
+    <string name="ach_prog_money">今回のプレイで使ったお金：%1$d円</string>
+    <string name="ach_prog_count">今：%1$d / %2$d</string>
+    <string name="menu_ach_header">【実績】 %1$d / %2$d</string>
+    <string name="menu_ach_row">%1$s %2$s\n　　%3$s</string>
+    <string name="menu_ach_locked">？？？</string>
+    <string name="menu_lost_header">【落とし物】 %1$d / %2$d</string>
+
+    <!-- 落とし物 -->
+    <string name="lost_card">学生証</string>
+    <string name="lost_eraser">消しゴム</string>
+    <string name="lost_usb">USBメモリ</string>
+    <string name="lost_pencil">シャープペン</string>
+    <string name="lost_badge">校章バッジ</string>
+    <string name="lost_found">%1$sを拾った！\n（落とし物 %2$d / %3$d）</string>
+
+    <!-- かくしボス：理事長 -->
+    <string name="boss_name">理事長</string>
+    <string name="boss_talk">【理事長】\n「よく来たね。校長に勝ったそうじゃないか」\n「では、私が最後の試験を出そう。これまでの4つの試験に、すべて合格してみせなさい」\n\n挑戦しますか？</string>
+    <string-array name="boss_stage_lines">
+        <item>「最後の試験を始める。第1問：ことば並べ！」</item>
+        <item>「第2問：穴うめだ。似ている文字に気をつけたまえ」</item>
+        <item>「第3問：板書うつし。よく見ておきなさい」</item>
+        <item>「最終問題だ。…私の攻撃を、よけきれるかな？」</item>
+    </string-array>
+    <!-- 理事長のよけゲームの攻撃パターン（DodgeView の P_〜 と同じ順番） -->
+    <string-array name="boss_pattern_lines">
+        <item>「チョークの壁だ。すき間を見つけたまえ！」</item>
+        <item>「赤ペンで、きみを狙い撃ちだ！」</item>
+        <item>「マウスたちよ、追いかけろ！」</item>
+        <item>「パソコンの雨だ。逃げ道は1列だけだぞ！」</item>
+    </string-array>
+    <string name="boss_confiscate_line">「ここから先は、身ひとつでかかってきなさい。」</string>
+    <string name="boss_confiscate">装備とアイテムを没収された！</string>
+    <string name="boss_shrink_line">「ここからが、本当の試験だ！」</string>
+    <string name="boss_shrink">わくがせまくなった！ にげ場がない…！</string>
+    <string name="boss_next_line">「ほう…なかなかやる。では、次の問題だ！」</string>
+    <string name="boss_next">合格！ 次の試験へ進む…</string>
+    <string name="boss_lose_line">「見事だ…。きみこそ、この学校の真の卒業生だ」</string>
+    <string name="boss_win">理事長に勝った！\nすべての試験に合格した！\n\n（実績以外のデータは、リセットされます）</string>
+    <string name="boss_to_title">▶ タイトルへ</string>
+    <string name="boss_key_title">🔑 理事長室の鍵を手に入れた！</string>
+    <string name="boss_key_msg">校長「卒業おめでとう。…だが、さらなる高みを目指しなさい。2階の奥の部屋で、あの方がきみを待っている」\n\n「つづきから」で、2階の理事長室に入れるようになった。</string>
+    <string name="btn_ok">OK</string>
+    <string name="boss_use_key">鍵がかかっている。
+鍵を使いますか？</string>
+    <string name="boss_door_locked">扉には鍵がかかっている。\n「理事長室」と書かれたプレートがある…</string>
+    <string name="boss_key_got">校長先生から「理事長室の鍵」を受け取った！\n校長「さらなる高みを目指しなさい。2階の奥の部屋で、あの方が待っている」</string>
+    <string-array name="taunts_boss">
+        <item>「まだまだだね」</item>
+        <item>「その程度では、卒業させられないな」</item>
+        <item>「落ち着いて、もう一度考えなさい」</item>
+    </string-array>
+    <string name="debug_boss_hp_title">［デバッグ］理事長のHPをどこから始める？</string>
+    <string name="debug_boss_hp_item">HP %1$d（%2$s から）</string>
+    <string name="debug_boss_hp_shrink">HP %1$d（最終問題・わくがせまい状態から）</string>
+    <string-array name="boss_stage_names">
+        <item>第1問：ことば並べ</item>
+        <item>第2問：穴うめ</item>
+        <item>第3問：板書うつし</item>
+        <item>最終問題：よけゲーム</item>
+    </string-array>
+    <string name="debug_boss">★ 理事長戦から（鍵あり・2F）</string>
+
+    <string name="debug_button">［デバッグ］階をえらんで始める</string>
+    <string name="debug_title">何階から始める？（所持金9999円）</string>
+    <string name="debug_floor">%1$dF から始める</string>
+    <string name="title_restart_ask">最初からやり直しますか？\n（お金・持ち物・先生に勝った記録・実績は、なくなります）</string>
 
     <!-- マップ画面 -->
     <string name="floor1">1F 購買フロア</string>
@@ -18,6 +136,39 @@
     <string name="teacher3">S先生</string>
     <string name="teacher4">校長先生</string>
 
+    <!-- 倒した先生に話しかけたとき（%1$s：先生の名前、%2$s：セリフ） -->
+    <string name="teacher_after">【%1$s】\n%2$s</string>
+    <string-array name="after_2f">
+        <item>「…負けたわ。上の階のE先生は、文字をよ〜く見る人よ」</item>
+        <item>「次の授業でリベンジするから、覚えてなさい♪」</item>
+        <item>「放課後は、寄り道しないで帰りなさいよ？」</item>
+    </string-array>
+    <string-array name="after_3f">
+        <item>「見事でした。もう、似ている文字にはだまされませんね」</item>
+        <item>「4階の先生は、板書を消すのがとても早いですよ」</item>
+        <item>「復習も忘れずに。…私も、問題の見直しが必要ですね」</item>
+    </string-array>
+    <string-array name="after_4f">
+        <item>「いや〜まいった。ノートの取り方、うまいね」</item>
+        <item>「校長先生は手ごわいよ。飛んでくる物を、よく見てね」</item>
+        <item>「今度、板書を覚えるコツを教えてよ」</item>
+    </string-array>
+    <string-array name="after_5f">
+        <item>「さらなる高みを目指しなさい。2階の奥の部屋で、あの方がきみを待っている」</item>
+        <item>「理事長室の鍵は、なくさないようにな」</item>
+        <item>「きみの卒業を、心から祝おう。…だが、本当の試験はこれからだ」</item>
+    </string-array>
+
+    <!-- 先生にふれたときのセリフ（%1$s：先生の名前、%2$s：セリフ） -->
+    <string name="teacher_talk">【%1$s】\n「%2$s」\n\n勝負しますか？</string>
+    <!-- 階ごとのセリフ（0番目は1F＝先生なしなので空） -->
+    <string-array name="teacher_greet">
+        <item></item>
+        <item>おや、上の階へ行きたいのですか？ それなら、まずは私の問題に答えてからにしなさい。</item>
+        <item>ここから先は通せませんよ。あなたのことばの力、見せてもらいましょうか。</item>
+        <item>よく来たね。でも残念、ここで止まってもらうよ。</item>
+        <item>ついにここまで来たか…。卒業したければ、この私をこえてゆけ！</item>
+    </string-array>
     <string name="meet_teacher">%1$sがあらわれた！\n（戦闘はまだないので、結果を選んでください）</string>
     <string name="win_teacher">%1$sに勝った！ %2$d円を手に入れた。\n先へ進めるようになった。</string>
     <string name="btn_close">とじる</string>
@@ -56,6 +207,8 @@
     <!-- 攻略失敗画面：4人目・5F（校長） -->
     <string name="over4_name">校長先生に負けた…</string>
     <string name="over4_msg">校長「まだまだだな。明日から毎朝、校長室に来なさい」\n朝のあいさつ当番が決まった…</string>
+    <string name="over5_name">理事長に負けた…</string>
+    <string name="over5_msg">理事長「最後の試験は、まだ早かったようだね」\n理事長室の前で、正座で反省することになった…</string>
 
     <!-- クリア画面のボタン -->
     <string name="to_endroll">▶ エンドロールへ</string>
@@ -125,12 +278,57 @@
     <string name="battle_win">%1$sに勝った！\n%2$d円を手に入れた。</string>
     <string name="battle_to_map">▶ マップへもどる</string>
 
+    <!-- 3F：穴うめバトル -->
+    <string name="fill_rule">【穴うめ】□に入る文字を、下の札から順番に選ぼう！\n似ている文字に注意！</string>
+    <string name="fill_wrong">ちがうみたい…よく見て、もう一度！</string>
+    <string name="fill_teacher_lose">「…よく見ていましたね。合格です」</string>
+
+    <!-- 4F：板書うつしバトル -->
+    <string name="memory_rule">【板書うつし】黒板に書かれた教科を覚えて、\n消えたら同じ順番でボタンを押そう！</string>
+    <string name="memory_label_watch">よく見て！（%1$d文字）</string>
+    <string name="memory_label_answer">書かれた順に押そう！</string>
+    <string name="memory_correct">%1$d文字ぜんぶ写せた！ %2$sに%3$dのダメージ！</string>
+    <string name="memory_timeout">時間切れ！ 精神的ダメージ %1$d！</string>
+    <string name="memory_wrong">順番がちがう！ 精神的ダメージ %1$d！</string>
+    <string name="memory_teacher_lose">「やるね…。ノート、ちゃんと取れてるじゃん」</string>
+
+    <!-- 5F：よけゲーム -->
+    <string name="dodge_rule">【よけゲーム】四角の中を指でなぞると、ハートが動くよ。\n飛んでくる物をよけきれば、反撃できる！</string>
+    <string name="dodge_wave">%1$sのこうげき！ よけろ！</string>
+    <string name="dodge_hit">当たった！ %1$dのダメージ！</string>
+    <string name="dodge_survived">よけきった！ 反撃！ %1$sに%2$dのダメージ！</string>
+    <string name="dodge_perfect">ノーミス！ 会心の反撃！\n%1$sに%2$dのダメージ！</string>
+    <string name="dodge_phase2_line">「…ほう。ここからは本気でいかせてもらおう！」</string>
+    <string name="dodge_phase2">%1$sが本気になった！ こうげきが激しくなる！</string>
+    <string name="dodge_teacher_lose">「見事だ…。だが、さらなる高みを目指しなさい。この学校には、まだ上がいる…」</string>
+    <!-- こうげきのときのセリフ（チョーク・ペン・マウス・パソコンの順） -->
+    <string-array name="dodge_attack_lines">
+        <item>「チョーク投げは、昔から得意でね」</item>
+        <item>「赤ペンの雨を受けてみよ！」</item>
+        <item>「マウスよ、走り回れ！」</item>
+        <item>「パソコン室の力を見せてやろう！」</item>
+    </string-array>
+
     <!-- 時間切れのときの先生のひとこと -->
     <string-array name="taunts_2f">
         <item>「時間切れ〜♪ プリント追加ね」</item>
         <item>「あら、まだ考えてたの？」</item>
         <item>「その程度じゃ放課後は帰れないわよ♪」</item>
         <item>「もっと頭をやわらかく！」</item>
+    </string-array>
+    <string-array name="taunts_3f">
+        <item>「そこは、よく見ればわかりますよ」</item>
+        <item>「似ている文字にだまされましたね」</item>
+        <item>「時間切れです。もう一度どうぞ」</item>
+    </string-array>
+    <string-array name="taunts_4f">
+        <item>「ノート、ちゃんと取ってた？」</item>
+        <item>「板書はすぐ消すよ〜」</item>
+        <item>「よそ見してたでしょ」</item>
+    </string-array>
+    <string-array name="taunts_5f">
+        <item>「まだまだ修行が足りんな」</item>
+        <item>「出直してきなさい」</item>
     </string-array>
     <string-array name="taunts_common">
         <item>「遅い！」</item>
@@ -142,15 +340,108 @@
     <string name="vending_ask">自販機だ。何か買う？</string>
     <string name="btn_yes">はい</string>
     <string name="btn_no">いいえ</string>
-    <string name="vending_brand">★ Nib ドリンク＆フード ★</string>
     <string name="vending_slot">取り出し口</string>
     <string name="vending_coin">COIN</string>
     <string name="vending_exit">▶ もどる</string>
     <string name="vending_led">所持金\n%1$d円\n\nHP\n%2$d/%3$d</string>
-    <string name="vending_push">押す</string>
+    <string name="vending_push">購入</string>
     <string name="vending_soldout">売切</string>
     <string name="vending_have">持っている ×%1$d</string>
     <string name="vending_get">ガコン！ %1$sが出てきた</string>
     <string name="vending_no_money">お金が足りない…</string>
     <string name="vending_full">もうこれ以上は持てない…</string>
+
+    <!-- 事務室の窓口（1Fの受付） -->
+    <string name="clerk_hello">事務員「こんにちは。事務室の窓口です。\n何かご用ですか？」</string>
+    <!-- 事務員さんの話（聞くたびに次の話になる） -->
+    <string-array name="clerk_talks">
+        <item>事務員「上の階の先生たちは手ごわいですよ。\n備品をそろえてから挑むといいですよ」</item>
+        <item>事務員「自販機のエナジードリンク、先生たちも\nこっそり買いに来るんですよ」</item>
+        <item>事務員「落とし物、よく届くんです。\n見つけたら拾っておいてくださいね」</item>
+        <item>事務員「5階の校長先生、昔はチョーク投げの\n名人だったらしいですよ…」</item>
+        <item>事務員「備品は、窓口でいつでも持ちかえられますよ」</item>
+        <item>事務員「…あの、そんなに話して大丈夫ですか？\n授業、始まっちゃいますよ？」</item>
+    </string-array>
+    <string name="clerk_talk">事務員「上の階の先生たちは手ごわいですよ。\n備品をそろえてから挑むといいですよ」</string>
+    <string name="btn_buy_items">備品を買う</string>
+    <string name="btn_talk">話を聞く</string>
+    <string name="btn_nothing">なんでもない</string>
+    <string name="reception_title">INFORMATION　事務室窓口</string>
+    <string name="reception_form">備品申込書</string>
+    <string name="form_col_name">品名</string>
+    <string name="form_col_desc">内容</string>
+    <string name="form_col_price">金額</string>
+    <string name="btn_apply">申し込む</string>
+    <string name="btn_switch">持ちかえる</string>
+    <string name="btn_using">使用中</string>
+    <string name="stamp_done">受付済</string>
+    <string name="reception_exit">▶ 窓口をはなれる</string>
+    <string name="reception_hello">「こんにちは、事務室です。\n勉強に役立つ備品、そろってますよ」</string>
+    <string name="reception_bought">「はい、受け付けました。\n%1$s、大事に使ってくださいね」</string>
+    <string name="reception_no_money">「あら…お金が足りないみたいですね」</string>
+    <string name="reception_equip">「%1$sに持ちかえましたね」</string>
+    <string name="reception_using">「それは今使っているものですよ」</string>
+    <string name="reception_status">所持金 %1$d円\n攻撃力 %2$d（%3$s）</string>
+
+    <!-- 自販機のポップアップ -->
+    <string name="vending_pop_sub">を手に入れた！</string>
+    <string name="vending_pop_tap">タップでとじる</string>
+
+    <!-- はじめの説明（ゲームを始めて1Fに来たときに出る） -->
+    <string name="btn_next">次へ ▶</string>
+    <string name="btn_start_game">はじめる！</string>
+    <string-array name="tutorial_pages">
+        <item>【Nib RPGへようこそ！】\nここは学校の1階。上の階で待つ先生たちに勝って、卒業をめざそう！（1/4）</item>
+        <item>【歩きかた】\n左下の十字ボタンで歩けるよ。押しっぱなしにすると、歩きつづける。（2/4）</item>
+        <item>【買い物】\n受付の事務員さんに話しかけると、備品（武器）が買えるよ。\n右下の自販機では、HPを回復する道具が買えるよ。（3/4）</item>
+        <item>【先生たち】\n上の階には、先生たちが待ちかまえている。左の階段から上へ進もう。\n先生に勝つと、さらに上の階へ行けるようになるよ！（4/4）</item>
+    </string-array>
+
+    <!-- キャラクリエイト -->
+    <string name="chara_title">見た目を決めよう</string>
+    <string name="chara_turn">向き</string>
+    <string name="chara_tab_hair">髪</string>
+    <string name="chara_tab_eye">目</string>
+    <string name="chara_tab_cloth">服</string>
+    <string name="chara_hex_hint">RRGGBB</string>
+    <string name="chara_rgb">R %1$d  G %2$d  B %3$d</string>
+    <string name="chara_presets">基本色</string>
+    <string name="chara_default">デフォルトに戻す</string>
+    <string name="chara_cancel">やめる</string>
+    <string name="chara_ok">決定</string>
+    <string name="btn_menu">メニュー</string>
+
+    <!-- メニュー画面 -->
+    <string name="menu_status">ステータス</string>
+    <string name="menu_items">持ち物</string>
+    <string name="menu_record">記録</string>
+    <string name="menu_back">◀ もどる</string>
+    <string name="menu_hp_label">HP</string>
+    <string name="menu_hp">%1$d / %2$d</string>
+    <string name="menu_attack">攻撃力　%1$d（素手 %2$d ＋ 備品 %3$d）</string>
+    <string name="menu_weapon">備品　　%1$s</string>
+    <string name="menu_money">所持金　%1$d円</string>
+    <string name="menu_defeated">倒した先生　%1$d / %2$d人</string>
+    <string name="menu_items_header">【道具】</string>
+    <string name="menu_weapons_header">【備品】</string>
+    <string name="menu_count">×%1$d</string>
+    <string name="menu_use">使う</string>
+    <string name="menu_equip">持ちかえる</string>
+    <string name="menu_equipped">使用中</string>
+    <string name="menu_no_items">道具は持っていない。1Fの自販機で買えるよ</string>
+    <string name="menu_no_weapons">備品は持っていない。1Fの受付で買えるよ</string>
+    <string name="menu_hp_full">HPは満タンだ。今は使わなくていい</string>
+    <string name="menu_used">%1$sを使った。HPが%2$d回復した！</string>
+    <string name="menu_equipped_msg">%1$sに持ちかえた</string>
+    <string name="menu_bare_desc">攻撃力 +0。こぶしで勝負する</string>
+    <string name="menu_bare_msg">備品をしまって、素手になった</string>
+    <string name="reception_unequip">「%1$sは、おあずかりしますね。\nまた使うときは『持ちかえる』をどうぞ」</string>
+    <string name="menu_record_header">【先生たち】</string>
+    <string name="menu_record_win">%1$s　%2$s　…　勝った！</string>
+    <string name="menu_record_not_yet">%1$s　%2$s　…　まだ</string>
+    <string name="menu_record_unknown">%1$s　？？？　…　まだ行ったことがない</string>
+    <string name="menu_howto">遊び方を見る</string>
+    <string name="menu_to_title">タイトルへもどる</string>
+    <string name="menu_title_note_ok">タイトル画面にもどります。\n続きは、タイトルの「つづきから」で遊べるよ</string>
+    <string name="menu_title_note_ng">タイトルへは、1Fからだけもどれるよ。\n階段で1Fまで下りよう</string>
 </resources>

@@ -1,66 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 自販機の商品1つぶん（VendingActivityで、商品の数だけ作る） -->
+<!-- 自販機の商品1つぶん（VendingActivityで、商品の数だけ作る）
+     上から：光る板の上の商品 → 棚 → 名前と効果 → 値段の表示 → 丸いボタン → 「購入」 → 持っている数 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="0dp"
     android:layout_height="match_parent"
+    android:layout_marginHorizontal="5dp"
     android:layout_weight="1"
     android:gravity="center_horizontal"
     android:orientation="vertical">
 
-    <ImageView
-        android:id="@+id/imgItem"
-        android:layout_width="wrap_content"
+    <!-- 光る板と商品 -->
+    <FrameLayout
+        android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:adjustViewBounds="true"
-        android:contentDescription="@null" />
+        android:background="@drawable/vending_backlit"
+        android:padding="6dp">
+
+        <ImageView
+            android:id="@+id/imgItem"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:adjustViewBounds="true"
+            android:contentDescription="@null" />
+    </FrameLayout>
+
+    <!-- 棚 -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="9dp"
+        android:background="@drawable/vending_shelf" />
 
     <TextView
         android:id="@+id/txtItemName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@color/nib_navy"
-        android:textSize="13sp"
+        android:layout_marginTop="4dp"
+        android:maxLines="1"
+        android:textColor="#FFE6EDF8"
+        android:textSize="12sp"
         android:textStyle="bold" />
 
     <TextView
         android:id="@+id/txtItemDesc"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="#FF5A6270"
-        android:textSize="10sp" />
+        android:maxLines="1"
+        android:textColor="#FF8FA3C2"
+        android:textSize="9sp" />
 
-    <!-- 値札 -->
+    <!-- 値段の表示 -->
     <TextView
         android:id="@+id/txtPrice"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:background="@drawable/vending_price"
-        android:paddingHorizontal="8dp"
-        android:textColor="@color/white"
-        android:textSize="13sp"
-        android:textStyle="bold" />
-
-    <!-- 商品のボタン -->
-    <TextView
-        android:id="@+id/btnPush"
         android:layout_width="64dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:clickable="true"
-        android:focusable="true"
+        android:background="@drawable/vending_lcd"
+        android:fontFamily="monospace"
         android:gravity="center"
-        android:paddingVertical="5dp"
-        android:textColor="@color/white"
+        android:paddingVertical="2dp"
+        android:textColor="#FF78DCFF"
         android:textSize="13sp"
+        android:textStyle="bold" />
+
+    <!-- 丸いボタン -->
+    <View
+        android:id="@+id/btnPush"
+        android:layout_width="38dp"
+        android:layout_height="38dp"
+        android:layout_marginTop="4dp"
+        android:background="@drawable/vending_round"
+        android:clickable="true"
+        android:focusable="true" />
+
+    <!-- 「購入」「売切」 -->
+    <TextView
+        android:id="@+id/txtPushLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#FFDCE6F5"
+        android:textSize="11sp"
         android:textStyle="bold" />
 
     <TextView
         android:id="@+id/txtHave"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="#FF5A6270"
-        android:textSize="10sp" />
+        android:textColor="#FF8FA3C2"
+        android:textSize="9sp" />
 
 </LinearLayout>

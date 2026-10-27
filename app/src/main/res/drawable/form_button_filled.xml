@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 申込書のボタン：使用中（紺でぬる） -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#FF0F3193" />
+    <stroke android:width="2dp" android:color="#FF0F3193" />
+    <corners android:radius="6dp" />
+</shape>

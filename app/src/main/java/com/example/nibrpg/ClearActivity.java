@@ -19,8 +19,11 @@ public class ClearActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // クリアしても、理事長を倒すまではゲームが続く（エンドロールのあと、理事長室の鍵をもらう）
+        GameState.save(this);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_clear);
+        Achievements.checkClear(this); // クリアが条件の実績を調べる
         // 画面のふち（ステータスバーなど）に文字がかぶらないようにする
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());

@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- メニュー画面：左にタブ、右に中身 -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    tools:context=".StatusActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:baselineAligned="false"
+        android:orientation="horizontal"
+        android:padding="12dp">
+
+        <!-- ========== 左：タブ ========== -->
+        <LinearLayout
+            android:layout_width="160dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/rpg_window"
+            android:orientation="vertical"
+            android:padding="8dp">
+
+            <TextView
+                android:id="@+id/tabStatus"
+                style="@style/MenuTab" />
+
+            <TextView
+                android:id="@+id/tabItems"
+                style="@style/MenuTab" />
+
+            <TextView
+                android:id="@+id/tabRecord"
+                style="@style/MenuTab" />
+
+            <TextView
+                android:id="@+id/tabAch"
+                style="@style/MenuTab" />
+
+            <TextView
+                android:id="@+id/tabHowTo"
+                style="@style/MenuTab" />
+
+            <TextView
+                android:id="@+id/tabTitle"
+                style="@style/MenuTab" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/btnBack"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:background="@drawable/nib_button"
+                android:gravity="center"
+                android:text="@string/menu_back"
+                android:textColor="@color/white"
+                android:textSize="15sp" />
+        </LinearLayout>
+
+        <!-- ========== 右：中身 ========== -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:background="@drawable/rpg_window"
+                android:padding="14dp">
+
+                <!-- 【ステータス】 -->
+                <LinearLayout
+                    android:id="@+id/pageStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/imgHero"
+                        android:layout_width="110dp"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/chara_stage"
+                        android:contentDescription="@string/menu_status"
+                        android:padding="10dp"
+                        android:scaleType="fitCenter" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="16dp"
+                        android:layout_weight="1"
+                        android:gravity="center_vertical"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/txtPlace"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/rpg_yellow"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <!-- HP（バーと数字） -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/menu_hp_label"
+                                android:textColor="@color/white"
+                                android:textSize="16sp" />
+
+                            <ProgressBar
+                                android:id="@+id/barHp"
+                                style="?android:attr/progressBarStyleHorizontal"
+                                android:layout_width="0dp"
+                                android:layout_height="12dp"
+                                android:layout_marginHorizontal="10dp"
+                                android:layout_weight="1"
+                                android:progressBackgroundTint="#55FFFFFF"
+                                android:progressTint="@color/battle_hp_green" />
+
+                            <TextView
+                                android:id="@+id/txtHp"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="@color/white"
+                                android:textSize="16sp" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/txtAttack"
+                            style="@style/MenuLine" />
+
+                        <TextView
+                            android:id="@+id/txtWeapon"
+                            style="@style/MenuLine" />
+
+                        <TextView
+                            android:id="@+id/txtMoney"
+                            style="@style/MenuLine" />
+
+                        <TextView
+                            android:id="@+id/txtDefeated"
+                            style="@style/MenuLine" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- 【持ち物（中身はJavaで作る）】 -->
+                <ScrollView
+                    android:id="@+id/pageItems"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone">
+
+                    <LinearLayout
+                        android:id="@+id/listItems"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical" />
+                </ScrollView>
+
+                <!-- 【記録】 -->
+                <ScrollView
+                    android:id="@+id/pageRecord"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingBottom="4dp"
+                            android:text="@string/menu_record_header"
+                            android:textColor="@color/rpg_yellow"
+                            android:textSize="14sp" />
+
+                        <!-- 階ごとの先生（Javaで作る） -->
+                        <LinearLayout
+                            android:id="@+id/listRecord"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:paddingStart="8dp"
+                            tools:ignore="RtlSymmetry" />
+                    </LinearLayout>
+                </ScrollView>
+
+                <!-- 【実績】落とし物と実績の一覧（Javaで作る） -->
+                <ScrollView
+                    android:id="@+id/pageAch"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone">
+
+                    <LinearLayout
+                        android:id="@+id/listAchievements"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical" />
+                </ScrollView>
+
+                <!-- 【遊び方】 -->
+                <ScrollView
+                    android:id="@+id/pageHowTo"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/txtHowTo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:lineSpacingExtra="4dp"
+                        android:textColor="@color/white"
+                        android:textSize="14sp" />
+                </ScrollView>
+
+                <!-- 【タイトルへ】1Fにいるときだけ、タイトルにもどれる -->
+                <LinearLayout
+                    android:id="@+id/pageTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/txtTitleNote"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:lineSpacingExtra="4dp"
+                        android:textColor="@color/white"
+                        android:textSize="15sp" />
+
+                    <TextView
+                        android:id="@+id/btnTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="44dp"
+                        android:layout_marginTop="16dp"
+                        android:background="@drawable/nib_button"
+                        android:gravity="center"
+                        android:paddingHorizontal="24dp"
+                        android:text="@string/menu_to_title"
+                        android:textColor="@color/white"
+                        android:textSize="16sp" />
+                </LinearLayout>
+            </FrameLayout>
+
+            <!-- 「〇〇を使った」などのメッセージ -->
+            <TextView
+                android:id="@+id/txtMessage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/rpg_window"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="8dp"
+                android:textColor="@color/white"
+                android:textSize="15sp"
+                android:visibility="gone" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

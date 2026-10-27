@@ -22,6 +22,9 @@ import java.util.List;
 /** ゲーム本編：マップを歩いて探索する画面 */
 public class MainActivity extends AppCompatActivity {
 
+    /** エンドロールのあとに開くとき true：「理事長室の鍵を受け取った」と知らせる */
+    public static final String EXTRA_GOT_KEY = "gotKey";
+
     private static final long FIRST_WAIT_MS = 300; // 押しっぱなしで歩き始めるまで
     private static final long STEP_MS = 180;       // 押しっぱなしのときの1歩の間かく
 
@@ -59,6 +62,13 @@ public class MainActivity extends AppCompatActivity {
         setupPad(R.id.btnLeft, -1, 0);
         setupPad(R.id.btnRight, 1, 0);
 
+        // メニュー（ステータス・持ち物・記録）を開く。閉じるとマップの続きから
+        findViewById(R.id.btnMenu).setOnClickListener(v -> {
+            if (talking) return;
+            stopWalking();
+            startActivity(new Intent(this, StatusActivity.class));
+        });
+
         // はじめて来たときは、1FのPの位置からスタート
         if (GameState.px < 0) {
             String[] map = MapData.FLOORS[GameState.floor];
@@ -69,8 +79,31 @@ public class MainActivity extends AppCompatActivity {
                     GameState.py = y;
                 }
             }
+            // Pがない階（デバッグで2F〜5Fから始めたとき）は、階段のとなりから
+            if (GameState.px < 0) standNextTo('/');
         }
         showFloor();
+
+        // ゲームを始めて、はじめて1Fに来たときだけ、遊び方の説明を出す
+        if (!GameState.tutorialDone) {
+            GameState.tutorialDone = true;
+            showTutorial(0);
+        }
+
+        // エンドロールのあと：校長先生から理事長室の鍵を受け取ったことを知らせる
+        if (getIntent().getBooleanExtra(EXTRA_GOT_KEY, false)) {
+            getIntent().removeExtra(EXTRA_GOT_KEY); // 画面を回したときなどに、もう一度出さない
+            showInfo(getString(R.string.boss_key_got));
+        }
+    }
+
+    /** 遊び方の説明を1ページ出す。「次へ」で次のページ、最後は「はじめる」で閉じる */
+    private void showTutorial(int page) {
+        String[] pages = getResources().getStringArray(R.array.tutorial_pages);
+        boolean last = (page == pages.length - 1);
+        showChoices(pages[page],
+                new String[] { getString(last ? R.string.btn_start_game : R.string.btn_next) },
+                new Runnable[] { last ? null : () -> showTutorial(page + 1) });
     }
 
     /** ボタンを押したら1歩。押しっぱなしなら歩き続ける */
@@ -98,6 +131,10 @@ public class MainActivity extends AppCompatActivity {
     /** 1歩動く。行き先のマスによって、することを変える */
     private void move(int dx, int dy) {
         if (talking) return;
+        // 押した方向を向く（壁などで進めなくても、向きは変わる）
+        GameState.dir = dx < 0 ? CharacterSprite.LEFT : dx > 0 ? CharacterSprite.RIGHT
+                : dy < 0 ? CharacterSprite.BACK : CharacterSprite.FRONT;
+        mapView.invalidate();
         String[] map = MapData.FLOORS[GameState.floor];
         int nx = GameState.px + dx;
         int ny = GameState.py + dy;
@@ -110,7 +147,11 @@ public class MainActivity extends AppCompatActivity {
             case 'K':
                 return; // 何もない場所・壁・机は通れない
             case '%':
-                openShop(ShopActivity.TYPE_WEAPON);
+                stopWalking();
+                showChoices(getString(R.string.clerk_hello),
+                        new String[] { getString(R.string.btn_buy_items), getString(R.string.btn_talk),
+                                getString(R.string.btn_nothing) },
+                        new Runnable[] { this::openShop, this::talkToClerk, null });
                 return;
             case '$':
                 stopWalking();
@@ -119,31 +160,132 @@ public class MainActivity extends AppCompatActivity {
                         new Runnable[] { this::openVending, null });
                 return;
             case 'T':
+                stopWalking();
                 if (!GameState.defeated[GameState.floor]) {
-                    meetTeacher();
-                    return;
+                    meetTeacher();             // まだ勝っていない：勝負するか聞く
+                } else {
+                    talkToDefeatedTeacher();   // 勝ったあと：ひとこと話す
                 }
-                break; // 勝ったあとは、ただの床
+                return;
             case '/':
                 useStairs();    // 階段：上か下かを選ぶ
                 return;
             case '!':
                 goThroughDoor(nx, ny);
                 return;
+            case 'L': // 理事長室の扉：鍵がないと開かない
+                stopWalking();
+                if (!GameState.bossKey) {
+                    showInfo(getString(R.string.boss_door_locked));      // 鍵を持っていない
+                } else if (!GameState.doorUnlocked) {
+                    useKey(nx, ny);                                       // はじめて：鍵を使うか聞く
+                } else {
+                    goThroughDoor(nx, ny);                                // もう開いている
+                }
+                return;
+            case 'R': // 理事長
+                stopWalking();
+                meetBoss();
+                return;
         }
         GameState.px = nx;
         GameState.py = ny;
-        mapView.invalidate(); // 描き直す
+        mapView.onPlayerStepped(); // 移動できたときだけ歩行アニメーション（描き直しもする）
+        pickUpLost();
+    }
+
+    /** 落とし物のマスに来たら拾う */
+    private void pickUpLost() {
+        for (int i = 0; i < MapData.LOST_ITEMS.length; i++) {
+            MapData.Lost l = MapData.LOST_ITEMS[i];
+            if (GameState.foundLost[i] || l.floor != GameState.floor
+                    || l.x != GameState.px || l.y != GameState.py) continue;
+            GameState.foundLost[i] = true;
+            stopWalking();
+            showInfo(getString(R.string.lost_found, getString(l.name),
+                    GameState.foundCount(), MapData.LOST_ITEMS.length));
+            mapView.invalidate();
+        }
+    }
+
+    // ===================== 理事長 =====================
+
+    /** 理事長に話しかけたとき：最後の試験を受けるか聞く */
+    private void meetBoss() {
+        showChoices(getString(R.string.boss_talk),
+                new String[] { getString(R.string.btn_yes), getString(R.string.btn_no) },
+                new Runnable[] { this::startBoss, null });
+    }
+
+    /** 理事長戦を始める（ふつうは1問目から、HPは満タン。デバッグ中は、HPを選んでから） */
+    private void startBoss() {
+        if (GameState.DEBUG) {
+            chooseBossHpForDebug();
+            return;
+        }
+        startBossFrom(BattleData.BOSS_HP);
+    }
+
+    /** デバッグ：理事長のHPをどこから始めるか選ぶ（HPに合わせて、何問目からかも決まる） */
+    private void chooseBossHpForDebug() {
+        int quarter = BattleData.BOSS_HP / BattleData.BOSS_STAGES.length;
+        int[] hps = { BattleData.BOSS_HP, quarter * 3, quarter * 2, quarter, BattleData.BOSS_SHRINK_HP };
+        String[] stageNames = getResources().getStringArray(R.array.boss_stage_names);
+        String[] labels = new String[hps.length];
+        for (int i = 0; i < hps.length; i++) {
+            labels[i] = getString(R.string.debug_boss_hp_item, hps[i], stageNames[bossStageOf(hps[i])]);
+        }
+        labels[hps.length - 1] = getString(R.string.debug_boss_hp_shrink, BattleData.BOSS_SHRINK_HP);
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle(R.string.debug_boss_hp_title)
+                .setItems(labels, (d, which) -> startBossFrom(hps[which]))
+                .setNegativeButton(R.string.btn_cancel, null)
+                .show();
+    }
+
+    /** 理事長のHPから、何問目かを決める（HP 200〜151：第1問、150〜101：第2問…） */
+    private int bossStageOf(int hp) {
+        int quarter = BattleData.BOSS_HP / BattleData.BOSS_STAGES.length;
+        return Math.min(BattleData.BOSS_STAGES.length - 1, (BattleData.BOSS_HP - hp) / quarter);
+    }
+
+    /** 理事長のHPを hp にして、その問題から始める */
+    private void startBossFrom(int hp) {
+        GameState.bossHp = hp;
+        int stage = bossStageOf(hp);
+        Intent intent = new Intent(this, BattleData.BOSS_STAGES[stage]);
+        intent.putExtra(BattleData.EXTRA_BOSS, true);
+        intent.putExtra(BattleData.EXTRA_STAGE, stage);
+        startActivity(intent);
+    }
+
+    // 倒した先生と話した回数（階ごと。話すたびに次のセリフになる）
+    private static final int[] afterTalks = new int[MapData.FLOORS.length];
+
+    /** 倒した先生に話しかけたとき：勝ったあとのセリフ（話すたびに変わる） */
+    private void talkToDefeatedTeacher() {
+        int f = GameState.floor;
+        String name = getString(MapData.TEACHER_NAMES[f]);
+        String[] lines = getResources().getStringArray(MapData.AFTER_TALKS[f]);
+        showInfo(getString(R.string.teacher_after, name, lines[afterTalks[f] % lines.length]));
+        afterTalks[f]++;
+    }
+
+    /** 事務員さんの話を聞く（聞くたびに話が変わる。10回で実績） */
+    private void talkToClerk() {
+        String[] talks = getResources().getStringArray(R.array.clerk_talks);
+        showInfo(talks[GameState.clerkTalks % talks.length]);
+        GameState.clerkTalks++;
+        if (GameState.clerkTalks >= Achievements.CLERK_TALK_COUNT) {
+            Achievements.unlock(this, Achievements.CLERK_REGULAR);
+        }
     }
 
     // ===================== お店 =====================
 
-    /** お店を開く。マップの画面は閉じないので、店を出るとそのまま続きから */
-    private void openShop(String type) {
-        stopWalking();
-        Intent intent = new Intent(this, ShopActivity.class);
-        intent.putExtra(ShopActivity.EXTRA_TYPE, type);
-        startActivity(intent);
+    /** 事務室の窓口（備品を買う画面）を開く。マップの画面は閉じないので、もどるとそのまま続きから */
+    private void openShop() {
+        startActivity(new Intent(this, ShopActivity.class));
     }
 
     /** 自販機の画面を開く。マップの画面は閉じないので、もどるとそのまま続きから */
@@ -156,7 +298,15 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         updateStatus();
-        mapView.invalidate(); // 戦闘で勝ったら、先生を消すため
+        mapView.invalidate(); // 戦闘や買い物のあとの状態で描き直す
+        GameState.save(this); // オートセーブ（戦闘で勝った・買い物をした、などを保存）
+    }
+
+    @Override
+    protected void onPause() {
+        stopWalking();
+        super.onPause();
+        GameState.save(this); // オートセーブ（マップを離れるとき・アプリを閉じるとき）
     }
 
     private void updateStatus() {
@@ -242,7 +392,8 @@ public class MainActivity extends AppCompatActivity {
         boolean[][] used = new boolean[map.length][map[0].length()];
         for (int y = 0; y < map.length; y++) {
             for (int x = 0; x < map[y].length(); x++) {
-                if (map[y].charAt(x) != '!' || used[y][x]) continue;
+                char door = map[y].charAt(x); // ! か L（理事長室の扉）
+                if ((door != '!' && door != 'L') || used[y][x]) continue;
                 // 新しいかたまり：となりの ! を全部集める
                 List<int[]> group = new ArrayList<>();
                 List<int[]> todo = new ArrayList<>();
@@ -256,7 +407,7 @@ public class MainActivity extends AppCompatActivity {
                         int ax = p[0] + d[0];
                         int ay = p[1] + d[1];
                         if (ay < 0 || ay >= map.length || ax < 0 || ax >= map[ay].length()) continue;
-                        if (map[ay].charAt(ax) == '!' && !used[ay][ax]) {
+                        if (map[ay].charAt(ax) == door && !used[ay][ax]) {
                             used[ay][ax] = true;
                             todo.add(new int[] { ax, ay });
                         }
@@ -311,11 +462,22 @@ public class MainActivity extends AppCompatActivity {
     // ===================== 先生 =====================
 
     /** 先生にぶつかったとき（戦闘画面ができるまでの仮の形） */
+    /** 先生にふれたとき：先生のセリフを出して、戦うかどうかを聞く */
     private void meetTeacher() {
-        // 戦闘画面がある階は、戦闘画面へ（マップの画面は閉じないので、勝ったら続きから）
+        stopWalking();
+        String name = getString(MapData.TEACHER_NAMES[GameState.floor]);
+        String line = getResources().getStringArray(R.array.teacher_greet)[GameState.floor];
+        showChoices(getString(R.string.teacher_talk, name, line),
+                new String[] { getString(R.string.btn_yes), getString(R.string.btn_no) },
+                new Runnable[] { this::startBattle, null }); // 「いいえ」なら何もしない
+    }
+
+    /** 戦う（「はい」を選んだとき） */
+    private void startBattle() {
+        // 戦闘画面がある階は、その階の戦闘画面へ（マップの画面は閉じないので、勝ったら続きから）
+        //   2F：ことば並べ　3F：穴うめ　4F：板書うつし　5F：よけゲーム
         if (BattleData.HAS_BATTLE[GameState.floor]) {
-            stopWalking();
-            startActivity(new Intent(this, BattleActivity.class));
+            startActivity(new Intent(this, BattleData.SCREENS[GameState.floor]));
             return;
         }
         // まだ戦闘画面がない階は、仮の「勝った／負けた」を選ぶ
@@ -346,6 +508,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // ===================== メッセージ =====================
+
+    /** 理事長室の扉：はじめてさわったとき「鍵を使いますか？」と聞く。「はい」で開けて中に入る */
+    private void useKey(int x, int y) {
+        showChoices(getString(R.string.boss_use_key),
+                new String[] { getString(R.string.btn_yes), getString(R.string.btn_no) },
+                new Runnable[] { () -> {
+                    GameState.doorUnlocked = true; // 一度開けたら、次からはそのまま通れる
+                    GameState.save(this);
+                    goThroughDoor(x, y);
+                }, null });
+    }
 
     /** 「とじる」だけのメッセージ */
     private void showInfo(String text) {
@@ -387,6 +560,8 @@ public class MainActivity extends AppCompatActivity {
     /** 押しっぱなしで歩き続ける処理を止める（お店や戦闘の画面が何回も開かないように） */
     private void stopWalking() {
         handler.removeCallbacksAndMessages(null);
+        // 歩行アニメーションも停止
+        if (mapView != null) mapView.stopWalkAnimation();
     }
 
     // 別の画面へ移動して、今の画面は閉じる

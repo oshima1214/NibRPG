@@ -47,6 +47,9 @@ public class BattleActivity extends AppCompatActivity {
     private String teacherName;
     private int teacherHp;
     private int teacherMaxHp;
+    private boolean boss;  // 理事長戦か
+    private int boxSize = 50; // 札の大きさ（dp）
+    private int stage;     // 理事長戦の何問目か（0〜3）
 
     // ---- 今の問題 ----
     private final List<BattleData.Word> deck = new ArrayList<>(); // これから出す問題
@@ -103,12 +106,23 @@ public class BattleActivity extends AppCompatActivity {
 
         // 先生の準備（今いる階の先生と戦う）
         floor = GameState.floor;
-        teacherName = getString(MapData.TEACHER_NAMES[floor]);
-        teacherMaxHp = BattleData.TEACHER_HP[floor];
-        teacherHp = teacherMaxHp;
-        imgTeacher.setImageResource(MapData.TEACHER_IMAGES[floor]);
+        boss = getIntent().getBooleanExtra(BattleData.EXTRA_BOSS, false);
+        stage = getIntent().getIntExtra(BattleData.EXTRA_STAGE, 0);
+        if (boss) {
+            // 理事長戦：HPは前の問題から引きつぐ
+            teacherName = getString(R.string.boss_name);
+            teacherMaxHp = BattleData.BOSS_HP;
+            teacherHp = GameState.bossHp;
+            imgTeacher.setImageResource(R.drawable.boss_rijicho);
+        } else {
+            teacherName = getString(MapData.TEACHER_NAMES[floor]);
+            teacherMaxHp = BattleData.TEACHER_HP[floor];
+            teacherHp = teacherMaxHp;
+            imgTeacher.setImageResource(MapData.TEACHER_IMAGES[floor]);
+        }
         ((TextView) findViewById(R.id.txtTeacherName)).setText(teacherName);
-        txtLine.setText(getString(R.string.battle_appear, teacherName));
+        long introMs = TypeWriter.show(txtLine, boss ? getResources().getStringArray(R.array.boss_stage_lines)[stage]
+                : getString(R.string.battle_appear, teacherName));
 
         findViewById(R.id.btnBackspace).setOnClickListener(v -> removeLast());
         findViewById(R.id.btnReset).setOnClickListener(v -> resetPicked());
@@ -123,7 +137,7 @@ public class BattleActivity extends AppCompatActivity {
 
         updateBars();
         refreshItems();
-        handler.postDelayed(this::nextWord, INTRO_MS);
+        handler.postDelayed(this::nextWord, Math.max(INTRO_MS, introMs)); // セリフを全部出してから始める
     }
 
     // ===================== 問題 =====================
@@ -133,7 +147,7 @@ public class BattleActivity extends AppCompatActivity {
         if (finished) return;
         // 問題の山がなくなったら、全部の単語を混ぜて作り直す
         if (deck.isEmpty()) {
-            Collections.addAll(deck, BattleData.WORDS);
+            Collections.addAll(deck, boss ? BattleData.BOSS_WORDS : BattleData.WORDS);
             Collections.shuffle(deck, random);
         }
         word = deck.remove(0);
@@ -143,10 +157,26 @@ public class BattleActivity extends AppCompatActivity {
         for (int i = 0; i < word.answer.length(); i++) {
             tiles.add(String.valueOf(word.answer.charAt(i)));
         }
-        for (int i = 0; i < BattleData.DUMMY_COUNT; i++) {
-            int r = random.nextInt(BattleData.DUMMY_LETTERS.length());
-            tiles.add(String.valueOf(BattleData.DUMMY_LETTERS.charAt(r)));
+        int dummies = boss ? BattleData.BOSS_DUMMY_COUNT : BattleData.DUMMY_COUNT;
+        for (int i = 0; i < dummies; i++) {
+            String d = null;
+            if (boss) {
+                // 理事長戦：答えの文字に見た目が似ている文字をハズレにする
+                char c = word.answer.charAt(random.nextInt(word.answer.length()));
+                String group = lookAlikes(c);
+                if (group.length() > 1) {
+                    char g;
+                    do { g = group.charAt(random.nextInt(group.length())); } while (g == c);
+                    d = String.valueOf(g);
+                }
+            }
+            if (d == null) {
+                int r = random.nextInt(BattleData.DUMMY_LETTERS.length());
+                d = String.valueOf(BattleData.DUMMY_LETTERS.charAt(r));
+            }
+            tiles.add(d);
         }
+        boxSize = tiles.size() > 8 ? 44 : 50; // 札が多いときは、少し小さくして1列に入れる
         Collections.shuffle(tiles, random);
         picked.clear();
 
@@ -172,7 +202,9 @@ public class BattleActivity extends AppCompatActivity {
 
         txtHint.setText(getString(R.string.battle_hint, word.hint));
         txtMessage.setText("");
-        timeLimit = BattleData.BASE_TIME_MS + BattleData.PER_LETTER_MS * word.answer.length();
+        timeLimit = boss
+                ? BattleData.BOSS_BASE_TIME_MS + BattleData.BOSS_PER_LETTER_MS * word.answer.length()
+                : BattleData.BASE_TIME_MS + BattleData.PER_LETTER_MS * word.answer.length();
         startTime = SystemClock.uptimeMillis();
         busy = false;
         handler.post(tick);
@@ -255,7 +287,7 @@ public class BattleActivity extends AppCompatActivity {
         busy = true;
         long elapsed = SystemClock.uptimeMillis() - startTime;
         boolean critical = elapsed <= timeLimit / 2; // 半分の時間で答えたらクリティカル
-        int damage = GameState.attack() * BattleData.DAMAGE_RATE;
+        int damage = GameState.rollAttack(); // 少しばらつく
         if (critical) damage = damage * 3 / 2;
 
         teacherHp = Math.max(0, teacherHp - damage);
@@ -264,6 +296,7 @@ public class BattleActivity extends AppCompatActivity {
         txtMessage.setText(getString(critical ? R.string.battle_critical : R.string.battle_correct,
                 teacherName, damage));
 
+        if (bossStageClear()) return; // 理事長戦：次の問題へ
         if (teacherHp <= 0) {
             win();
         } else {
@@ -274,20 +307,21 @@ public class BattleActivity extends AppCompatActivity {
     /** 時間切れ：先生から精神的ダメージ */
     private void onTimeout() {
         busy = true;
-        int damage = BattleData.TEACHER_ATTACK[floor];
+        int damage = teacherAttack();
         GameState.hp = Math.max(0, GameState.hp - damage);
+        GameState.tookDamage = true; // 実績のため
         updateBars();
         flashRed();
 
-        String[] taunts = getResources().getStringArray(BattleData.TAUNTS[floor]);
-        txtLine.setText(taunts[random.nextInt(taunts.length)]);
+        String[] taunts = getResources().getStringArray(tauntsId());
+        long lineMs = TypeWriter.show(txtLine, taunts[random.nextInt(taunts.length)]);
         txtMessage.setText(getString(R.string.battle_timeout, word.answer, damage));
 
         if (GameState.hp <= 0) {
             finished = true;
-            handler.postDelayed(this::lose, AFTER_MISS_MS);
+            handler.postDelayed(this::lose, Math.max(AFTER_MISS_MS, lineMs));
         } else {
-            handler.postDelayed(this::nextWord, AFTER_MISS_MS);
+            handler.postDelayed(this::nextWord, Math.max(AFTER_MISS_MS, lineMs));
         }
     }
 
@@ -295,11 +329,12 @@ public class BattleActivity extends AppCompatActivity {
 
     private void win() {
         finished = true;
+        Achievements.checkWin(this); // HPが残り1桁なら実績
         GameState.defeated[floor] = true;
         int reward = MapData.REWARDS[floor];
         GameState.money += reward;
 
-        txtLine.setText(R.string.battle_teacher_lose);
+        TypeWriter.show(txtLine, R.string.battle_teacher_lose);
         ((TextView) findViewById(R.id.txtResult)).setText(getString(R.string.battle_win, teacherName, reward));
         View box = findViewById(R.id.resultBox);
         box.setVisibility(View.VISIBLE);
@@ -317,7 +352,7 @@ public class BattleActivity extends AppCompatActivity {
     private void lose() {
         // 攻略失敗画面へ（後ろに残っているマップの画面も閉じる）
         Intent intent = new Intent(this, GameOverActivity.class);
-        intent.putExtra(GameOverActivity.EXTRA_TEACHER, floor);
+        intent.putExtra(GameOverActivity.EXTRA_TEACHER, boss ? BattleData.BOSS_GAME_OVER : floor);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
@@ -352,6 +387,7 @@ public class BattleActivity extends AppCompatActivity {
         int before = GameState.hp;
         GameState.hp = Math.min(GameState.maxHp, GameState.hp + ShopData.ITEMS[i].power);
         GameState.itemCounts[i]--;
+        GameState.usedItem = true; // 実績のため
         txtMessage.setText(getString(R.string.battle_item_used, ShopData.ITEMS[i].name, GameState.hp - before));
         updateBars();
         refreshItems();
@@ -378,7 +414,7 @@ public class BattleActivity extends AppCompatActivity {
         t.setTextColor(getColor(R.color.nib_navy));
         t.getPaint().setFakeBoldText(true);
         t.setBackgroundResource(background);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(dp(50), dp(50));
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(dp(boxSize), dp(boxSize));
         lp.setMargins(dp(3), 0, dp(3), 0);
         t.setLayoutParams(lp);
         return t;
@@ -406,5 +442,51 @@ public class BattleActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         handler.removeCallbacksAndMessages(null);
+    }
+
+    // ===================== 理事長戦 =====================
+
+    /** その文字の「見まちがえやすいなかま」（なければその文字だけ） */
+    private String lookAlikes(char c) {
+        for (String group : BattleData.LOOK_ALIKES) {
+            if (group.indexOf(c) >= 0) return group;
+        }
+        return String.valueOf(c);
+    }
+
+    /** 失敗したときのダメージ（理事長戦は BOSS_ATTACK） */
+    private int teacherAttack() {
+        return boss ? BattleData.BOSS_ATTACK : BattleData.TEACHER_ATTACK[floor];
+    }
+
+    /** 失敗したときのひとこと（理事長戦は taunts_boss） */
+    private int tauntsId() {
+        return boss ? R.array.taunts_boss : BattleData.TAUNTS[floor];
+    }
+
+    /**
+     * 理事長戦：この問題（ミニゲーム）のぶんのHPを削りきったら、次の問題へ。
+     * 1つの問題で削れるのは、HPの4分の1まで
+     * @return 次の問題へ進むときは true
+     */
+    private boolean bossStageClear() {
+        int stages = BattleData.BOSS_STAGES.length;
+        if (!boss || stage >= stages - 1) return false;
+        int border = BattleData.BOSS_HP * (stages - 1 - stage) / stages;
+        if (teacherHp > border) return false;
+        teacherHp = border;
+        GameState.bossHp = teacherHp;
+        updateBars();
+        finished = true;
+        long lineMs = TypeWriter.show(txtLine, R.string.boss_next_line);
+        txtMessage.setText(R.string.boss_next);
+        handler.postDelayed(() -> {
+            Intent intent = new Intent(this, BattleData.BOSS_STAGES[stage + 1]);
+            intent.putExtra(BattleData.EXTRA_BOSS, true);
+            intent.putExtra(BattleData.EXTRA_STAGE, stage + 1);
+            startActivity(intent);
+            finish();
+        }, Math.max(1800, lineMs));
+        return true;
     }
 }

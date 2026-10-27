@@ -11,6 +11,7 @@
     <color name="over2_bg">#FF1F2E14</color>   <!-- 失敗・2人目・3F（E先生）：深緑 -->
     <color name="over3_bg">#FF102438</color>   <!-- 失敗・3人目（S先生・大きめ）：深い青 -->
     <color name="over4_bg">#FF111111</color>   <!-- 失敗・校長：ほぼ黒 -->
+    <color name="over5_bg">#FF2A0E0E</color>   <!-- 失敗・理事長：深い赤黒 -->
     <color name="game_bg">#FF1E3A1E</color>    <!-- 仮のゲーム画面：深緑 -->
     <color name="rpg_yellow">#FFFFD54F</color>
     <color name="rpg_red">#FFFF5252</color>
@@ -32,4 +33,10 @@
     <!-- 自販機の画面 -->
     <color name="vending_room">#FF0B1A33</color>       <!-- まわりの暗い背景 -->
     <color name="vending_led_green">#FF39FF6A</color>  <!-- 光る緑の文字 -->
+
+    <!-- 事務室の窓口 -->
+    <color name="office_wall">#FFEFE6D2</color>     <!-- 事務室のかべ -->
+    <color name="counter_top">#FFF2F0EA</color>     <!-- カウンターの台 -->
+    <color name="counter_front">#FFAEB7BD</color>   <!-- カウンターの前板 -->
+    <color name="form_red">#FFD32F2F</color>        <!-- 申込書の赤 -->
 </resources>
