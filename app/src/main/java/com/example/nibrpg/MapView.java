@@ -399,12 +399,14 @@ public class MapView extends View {
     }
 
     /** 主人公：キャラクリで選んだ髪型・色・服装を表示（重田さん作） */
+    private static final float HERO_TILES = 1.6f; // 主人公の高さ（マス）。先生（2マス）の8割
+
     private void drawPlayer(Canvas canvas, float l, float t, float s) {
-        // CharacterSprite のドット絵は幅20、高さ29
-        // 高さを約1.45マス分に調整し、足元をマスの下側に合わせる
-        float scale = s * 1.45f / 29f;
-        float drawX = l + (s - 20f * scale) / 2f;
-        float drawY = t + s - 29f * scale;
+        // CharacterSprite のドット絵（横 WIDTH・縦 HEIGHT）を、高さ HERO_TILES マス分にする
+        // 足元をマスの下側に合わせる（上のマスにはみ出す）
+        float scale = s * HERO_TILES / CharacterSprite.HEIGHT;
+        float drawX = l + (s - CharacterSprite.WIDTH * scale) / 2f;
+        float drawY = t + s - CharacterSprite.HEIGHT * scale;
         // 向きは GameState.dir（押した方向。壁にぶつかっても向きは変わる）
         hero.draw(canvas, drawX, drawY, scale, GameState.dir, walkFrame);
     }

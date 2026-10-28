@@ -820,18 +820,18 @@ public class CharacterCreate extends Activity {
             super.onDraw(canvas);
 
             float scale = Math.min(
-                    getWidth() / 24f,
-                    getHeight() / 33f
+                    getWidth() / (CharacterSprite.WIDTH + 4f),
+                    getHeight() / (CharacterSprite.HEIGHT + 4f)
             );
 
             if (scale <= 0) return;
 
             float x = (
-                    getWidth() - 20f * scale
+                    getWidth() - CharacterSprite.WIDTH * scale
             ) / 2f;
 
             float y = (
-                    getHeight() - 29f * scale
+                    getHeight() - CharacterSprite.HEIGHT * scale
             ) / 2f;
 
             character.draw(

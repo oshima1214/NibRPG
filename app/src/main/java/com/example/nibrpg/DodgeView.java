@@ -5,7 +5,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.RectF;
+import android.graphics.Typeface;
 import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -18,7 +20,9 @@ import java.util.Random;
 /**
  * 5Fのよけゲームの四角。
  * 指でなぞるとハートが動く（指の動いた分だけ動くので、ハートに指がかぶらない）。
- * 先生のこうげき（チョーク・ペン・マウス・パソコン）が飛んでくるので、当たらないようによける。
+ * 先生のこうげきが飛んでくるので、当たらないようによける。
+ *   ・理事長：チョーク・ペン・マウス・パソコンのパターン
+ *   ・校長　：ハンコ・チャイム・時計の針・マイクの音波のパターン
  */
 public class DodgeView extends View {
 
@@ -27,13 +31,28 @@ public class DodgeView extends View {
     public static final int PEN = 1;   // ペン：上から落ちてくる
     public static final int MOUSE = 2; // マウス：かべで跳ね返りながら動き回る
     public static final int PC = 3;    // パソコン：ハートをねらって上から落ちる（赤い予告あり）
+    public static final int STAMP = 4; // 校長のハンコ：赤い丸の予告のあと、ドンと押される
+    public static final int BELL = 5;  // チャイムの鐘：まん中に置かれる（さわると痛い）
+    public static final int RING = 6;  // チャイムの輪：鐘から広がる。向かい合わせに2か所すき間がある
+    public static final int HAND = 7;  // 時計の針：まん中を軸に回る
+    public static final int WAVE = 8;  // マイクの音波：上下にゆれながら横に流れる、通り道の外がわ
+    public static final int PAPER = 9; // 書類：上から落ちてきて、下に積もる（積もった書類もかべになる）
 
     /** 理事長戦の攻撃パターン（ランダムではなく、決まった形で飛んでくる） */
     public static final int P_CHALK_WALL = 0;   // チョークの壁：1か所だけすき間がある列が、左右から交互に来る
     public static final int P_PEN_SNIPE = 1;    // ペンの狙い撃ち：わくのはしでハートに向きを合わせ、少し止まってから一直線に飛んでくる
     public static final int P_MOUSE_HOMING = 2; // マウスの追いかけ：ハートをねらって曲がりながら追いかけてくる
     public static final int P_PC_ROW = 3;       // パソコンの列：わくのはしからはしまで降る。1列だけ逃げ道がある
-    public static final int PATTERN_COUNT = 4;
+    public static final int PATTERN_COUNT = 4;  // 理事長のパターンの数（0〜3）
+
+    /** 校長戦の攻撃パターン */
+    public static final int P_STAMP = 4; // ハンコ連打：ハートのいる所に、予告のあとハンコが押される
+    public static final int P_CHIME = 5; // チャイムの輪：まん中の鐘から輪が広がる。向かい合わせの2つのすき間のどちらかをくぐる
+    public static final int P_CLOCK = 6; // 時計の針：長い針と短い針が回る。長い針はときどき逆回り
+    public static final int P_MIC = 7;   // マイクの音波：ゆれながら流れる通り道の中にいる（今は使っていない）
+    public static final int P_CLOCK_STAMP = 8; // 時計の針＋ハンコ：針から逃げながら、ハンコもよける
+    public static final int P_PAPERS = 9;      // 書類の山：落ちてくる書類が積もって、動ける場所がだんだんせまくなる
+    public static final int P_CHIME_SPIN = 10; // チャイムの輪（第2形態）：広がりながら、すき間がゆっくり回る
 
     /** 当たったとき・こうげきが終わったときに知らせる */
     public interface Listener {
@@ -59,6 +78,12 @@ public class DodgeView extends View {
         long lockAt;      // 狙い撃ち：この時刻から、向きを固定する（それまではハートを追って向きを変える）
         long dashAt;      // 狙い撃ち：この時刻に、一直線に飛び出す
         float dashSpeed;  // 狙い撃ち：飛び出す速さ
+        float spin;       // 時計の針：1秒に回る角度（度）
+        long flipAt;      // 時計の針：この時刻に逆回りになる
+        long flipEvery;   // 時計の針：逆回りになる間かく
+        boolean face;     // 時計の針：文字ばんもいっしょに描く
+        float gapDir;     // チャイムの輪：すき間の向き（度）
+        int col;          // 書類：落ちる列
     }
 
     private static final long HIT_GUARD_MS = 1000; // 当たったあと、無敵になる時間
@@ -69,6 +94,10 @@ public class DodgeView extends View {
     private final Paint frame = new Paint(Paint.ANTI_ALIAS_FLAG);  // 四角のわく
     private final Paint fill = new Paint();
     private final Paint aim = new Paint(Paint.ANTI_ALIAS_FLAG);    // 狙い撃ちの予告線
+    private final Paint line = new Paint(Paint.ANTI_ALIAS_FLAG);   // 輪・針・波などの線
+    private final Paint soft = new Paint(Paint.ANTI_ALIAS_FLAG);   // 丸などのぬりつぶし
+    private final Paint text = new Paint(Paint.ANTI_ALIAS_FLAG);   // ハンコの文字
+    private final Path path = new Path();
     private final RectF arena = new RectF();  // 今の四角（せまくなることがある）
     private final RectF base = new RectF();   // 元の大きさの四角
     private final RectF dst = new RectF();
@@ -106,6 +135,34 @@ public class DodgeView extends View {
     private float gapY;                // チョークの壁：すき間の位置
     private static final float MOUSE_TURN = 2.6f; // マウスが1秒に曲がれる角度（ラジアン。大きいほど、しつこく追いかける）
 
+    // ---- 校長戦の数字 ----
+    private static final long STAMP_WARN_MS = 850;   // ハンコ：予告してから押されるまで
+    private static final long STAMP_HIT_MS = 250;    // ハンコ：押されてから当たる時間
+    private static final float STAMP_SIZE = 0.2f;    // ハンコ：半径（わくの高さの何倍か）
+    private static final float STAMP_BIG_RATE = 2.5f; // ハンコ：ハートと関係ない場所に出る、大きいハンコの倍率
+    private static final long STAMP_MARK_MS = 700;   // ハンコ：押したあと、あとが残る時間（当たらない）
+    private static final long STAMP_EVERY_MS = 550;  // ハンコ：次の予告まで
+    private static final long BELL_WARN_MS = 900;    // チャイム：鐘が出てから、さわると痛くなるまで
+    private static final long RING_EVERY_MS = 1300;  // チャイム：次の輪まで
+    private static final float RING_GAP_DEG = 45f;   // チャイム：輪のすき間1つの大きさ（度）。すき間は向かい合わせに2つ
+    private static final float RING_GAP_SPIN = 45f;  // チャイム（第2形態）：すき間が1秒に回る角度（度）
+    private static final long HAND_WARN_MS = 800;    // 時計：針が出てから、当たるようになるまで
+    private static final float HAND_SPIN = 150f;     // 時計：長い針が1秒に回る角度（度）
+    private static final long HAND_FLIP_MS = 2600;   // 時計：長い針が逆回りになる間かく
+    private static final long FLIP_WARN_MS = 600;    // 時計：逆回りの前に、針が点めつする時間
+    private static final float COMBO_HAND_RATE = 0.6f;     // 針＋ハンコ：針の速さ（時計だけのときの何倍か）
+    private static final long COMBO_STAMP_WARN_MS = 1000;  // 針＋ハンコ：ハンコの予告の長さ
+    private static final long COMBO_STAMP_EVERY_MS = 1100; // 針＋ハンコ：次のハンコまで
+    private static final long WAVE_OPEN_MS = 1200;   // 音波：通り道が、だんだんせまくなる時間
+    private static final long PAPER_WARN_MS = 450;   // 書類：列が光ってから、落ち始めるまで
+    private static final long PAPER_EVERY_MS = 400;  // 書類：次の書類まで
+    private static final float PAPER_FALL = 1.1f;    // 書類：落ちる速さ（1秒に、わくの高さの何倍か）
+    private static final float PAPER_THICK = 0.09f;  // 書類：1枚（1束）の厚さ（わくの高さの何倍か）
+    private static final float PAPER_MAX = 0.6f;     // 書類：積もる高さの上限（わくの高さの何倍か）
+    private static final float PAPER_AIM = 0.45f;    // 書類：ハートのいる列をねらう割合
+    private float[] paperTop = new float[0];         // 書類：列ごとの、積もった山のてっぺん
+    private int paperCols;                           // 書類：列の数
+
     public DodgeView(Context context, AttributeSet attrs) {
         super(context, attrs);
         dp = getResources().getDisplayMetrics().density;
@@ -115,6 +172,10 @@ public class DodgeView extends View {
         frame.setColor(0xFFFFFFFF);
         aim.setStyle(Paint.Style.STROKE);
         aim.setStrokeWidth(2 * dp);
+        line.setStyle(Paint.Style.STROKE);
+        line.setStrokeCap(Paint.Cap.ROUND);
+        text.setTextAlign(Paint.Align.CENTER);
+        text.setTypeface(Typeface.DEFAULT_BOLD);
         heart = load(R.drawable.dodge_heart);
         chalk = load(R.drawable.dodge_chalk);
         pen = load(R.drawable.dodge_pen);
@@ -282,6 +343,87 @@ public class DodgeView extends View {
                 shots.add(s);
                 return (long) (900 / speed);
             }
+            case P_STAMP: {
+                // ハートのいる所（少しずらす）に予告。3回に1回は、ほかの場所に大きいハンコを押して道をふさぐ
+                boolean big = patternStep % 3 == 2;
+                spawnStamp(now, big, STAMP_WARN_MS);
+                patternStep++;
+                return (long) (STAMP_EVERY_MS / speed);
+            }
+            case P_CHIME:
+            case P_CHIME_SPIN: {
+                if (patternStep == 0) {
+                    // はじめに、まん中に鐘を置く（点めつしている間は、さわっても平気）
+                    Shot b = newShot(BELL, now);
+                    b.w = heartSize * 1.8f;
+                    b.x = arena.centerX();
+                    b.y = arena.centerY();
+                    b.dropAt = now + BELL_WARN_MS;
+                    shots.add(b);
+                    gapY = random.nextInt(360); // すき間の向き（gapY を角度に使う）
+                    patternStep++;
+                    return BELL_WARN_MS;
+                }
+                // 鐘から輪を1つ出す。すき間の向きは、前の輪から少しだけ回す（読めば通れる）
+                Shot s = newShot(RING, now);
+                s.x = arena.centerX();
+                s.y = arena.centerY();
+                s.w = heartSize * 0.9f;       // 今の半径
+                s.h = heartSize * 0.55f;      // 輪の太さ
+                s.vx = H * 0.32f * speed;     // 1秒に広がる量
+                gapY += (random.nextBoolean() ? 1 : -1) * (40 + random.nextInt(50));
+                if (pattern == P_CHIME) {
+                    // 第1形態（すき間が回らない）：すき間がほぼ真上・真下を向くと、
+                    // 輪がわくの上下にとどいたあと左右に逃げ場がなくなるので、ななめより横に寄せる
+                    float a = ((gapY % 180) + 180) % 180; // 0〜180度
+                    if (a > 60 && a < 120) gapY += (a < 90) ? (60 - a) : (120 - a);
+                }
+                s.gapDir = gapY;
+                if (pattern == P_CHIME_SPIN) {
+                    // 第2形態：広がりながら、すき間が回る（回る向きは輪ごとにランダム）
+                    s.spin = (random.nextBoolean() ? 1 : -1) * RING_GAP_SPIN * speed;
+                }
+                shots.add(s);
+                patternStep++;
+                return (long) (RING_EVERY_MS / speed);
+            }
+            case P_CLOCK: {
+                spawnClock(now, 1f);
+                return waveLength; // このこうげきの間は、もう出さない
+            }
+            case P_CLOCK_STAMP: {
+                // 時計の針（少しおそめ）＋ハートをねらうハンコ（ゆっくりめ）
+                if (patternStep == 0) {
+                    spawnClock(now, COMBO_HAND_RATE);
+                    patternStep++;
+                    return HAND_WARN_MS + 600; // 針が動き出してから、ハンコを始める
+                }
+                spawnStamp(now, false, COMBO_STAMP_WARN_MS);
+                patternStep++;
+                return (long) (COMBO_STAMP_EVERY_MS / speed);
+            }
+            case P_PAPERS: {
+                if (patternStep == 0) {
+                    // 列を決めて、山の高さを0にする
+                    paperCols = Math.max(5, Math.min(9, (int) (AW / (heartSize * 1.7f))));
+                    paperTop = new float[paperCols];
+                    for (int c = 0; c < paperCols; c++) paperTop[c] = arena.bottom;
+                }
+                spawnPaper(now);
+                patternStep++;
+                return (long) (PAPER_EVERY_MS / speed);
+            }
+            case P_MIC: {
+                // ゆれながら流れる通り道（外がわが音波）。はじめは広く、だんだんせまくなる
+                Shot s = newShot(WAVE, now);
+                s.w = AW * 0.85f;            // 波の長さ
+                s.h = AH * 0.26f;            // ゆれのはば
+                s.vx = AW * 0.32f * speed;   // 流れる速さ
+                s.x = random.nextFloat() * s.w; // 流れた量（はじめの形をランダムに）
+                s.gapDir = heartSize * 1.5f; // 通り道の半分のはば（せまくなったとき）
+                shots.add(s);
+                return waveLength;
+            }
             default: { // P_PC_ROW
                 // わくのはしからはしまで、パソコンを横一列に。ランダムな1列だけ空ける
                 float bw = H * 0.32f;
@@ -303,6 +445,74 @@ public class DodgeView extends View {
                 return (long) (1300 / speed); // 次の列まで（短め）
             }
         }
+    }
+
+    /** 書類を1つ落とす（ときどきハートのいる列をねらう。上限まで積もった列には落とさない） */
+    private void spawnPaper(long now) {
+        float H = base.height();
+        float colW = arena.width() / paperCols;
+        float thick = H * PAPER_THICK;
+        float full = arena.bottom - arena.height() * PAPER_MAX; // ここより上には積もらない
+        int heartCol = Math.max(0, Math.min(paperCols - 1, (int) ((heartX - arena.left) / colW)));
+        int c = random.nextFloat() < PAPER_AIM ? heartCol : random.nextInt(paperCols);
+        for (int k = 0; k < paperCols && paperTop[c] - thick < full; k++) c = (c + 1) % paperCols; // いっぱいなら となりへ
+        if (paperTop[c] - thick < full) return; // 全部いっぱい
+        Shot s = newShot(PAPER, now);
+        s.col = c;
+        s.w = colW * 0.92f;
+        s.h = thick;
+        s.x = arena.left + (c + 0.5f) * colW + (random.nextFloat() * 2f - 1f) * colW * 0.04f; // 少しずらして、山っぽく
+        s.y = arena.top - thick / 2;
+        s.vy = H * PAPER_FALL * speed;
+        s.dropAt = now + (long) (PAPER_WARN_MS / speed);
+        shots.add(s);
+    }
+
+    /** ハンコを1つ出す（big：ハートと関係ない場所に、大きいハンコ） */
+    private void spawnStamp(long now, boolean big, long warnMs) {
+        float H = base.height();
+        float r = H * STAMP_SIZE * (big ? STAMP_BIG_RATE : 1f); // ハンコの半径
+        Shot s = newShot(STAMP, now);
+        s.w = r * 2;
+        float tx = big ? arena.left + random.nextFloat() * arena.width()
+                : heartX + (random.nextFloat() * 2f - 1f) * heartSize * 0.6f;
+        float ty = big ? arena.top + random.nextFloat() * arena.height()
+                : heartY + (random.nextFloat() * 2f - 1f) * heartSize * 0.6f;
+        float mx = Math.min(r * 0.6f, arena.width() / 2);
+        float my = Math.min(r * 0.6f, arena.height() / 2);
+        s.x = Math.max(arena.left + mx, Math.min(arena.right - mx, tx));
+        s.y = Math.max(arena.top + my, Math.min(arena.bottom - my, ty));
+        s.dropAt = now + (long) (warnMs / speed); // この時刻に押される
+        shots.add(s);
+    }
+
+    /** 時計の針を出す：長い針（わくのはしまで）と短い針。はじめはハートと反対を向く */
+    private void spawnClock(long now, float spinRate) {
+        float AW = arena.width(), AH = arena.height();
+        float heartDeg = (float) Math.toDegrees(Math.atan2(heartY - arena.centerY(), heartX - arena.centerX()));
+        int dir = random.nextBoolean() ? 1 : -1;
+        Shot l = newShot(HAND, now);
+        l.x = arena.centerX();
+        l.y = arena.centerY();
+        l.w = (float) Math.hypot(AW, AH) / 2 + heartSize;
+        l.h = heartSize * 0.45f;
+        l.angle = heartDeg + 180;
+        l.spin = dir * HAND_SPIN * spinRate * speed;
+        l.flipEvery = (long) (HAND_FLIP_MS / speed);
+        l.flipAt = now + HAND_WARN_MS + l.flipEvery;
+        l.dropAt = now + HAND_WARN_MS;
+        l.face = true;
+        Shot sh = newShot(HAND, now);
+        sh.x = l.x;
+        sh.y = l.y;
+        sh.w = AH * 0.28f;
+        sh.h = heartSize * 0.6f;
+        sh.angle = heartDeg + 90;
+        sh.spin = -dir * HAND_SPIN * 0.55f * spinRate * speed;
+        sh.flipAt = Long.MAX_VALUE; // 短い針は逆回りしない
+        sh.dropAt = l.dropAt;
+        shots.add(l);
+        shots.add(sh);
     }
 
     private Shot newShot(int type, long now) {
@@ -438,6 +648,11 @@ public class DodgeView extends View {
         // 動かす・外に出た物を消す
         for (int i = shots.size() - 1; i >= 0; i--) {
             Shot s = shots.get(i);
+            if (s.type >= STAMP) {
+                // 校長のこうげきは、それぞれの動き方
+                if (updatePrincipal(s, now, dt)) shots.remove(i);
+                continue;
+            }
             if (s.type == PC && now < s.dropAt) continue; // 予告中は動かない
             if (s.snipe && now < s.dashAt) {
                 // 狙い撃ちの準備中：はじめはハートの方を向き続け、lockAt からは向きを固定して止まる
@@ -488,7 +703,7 @@ public class DodgeView extends View {
             for (Shot s : shots) {
                 if (s.type == PC && now < s.dropAt) continue;
                 if (s.snipe && now < s.dashAt) continue; // 狙っている間は当たらない
-                if (hits(s)) {
+                if (hits(s, now)) {
                     guardUntil = now + HIT_GUARD_MS;
                     hitThisWave = true;
                     if (listener != null) post(() -> listener.onHit());
@@ -563,9 +778,91 @@ public class DodgeView extends View {
         shots.add(s);
     }
 
+    /** 校長のこうげきを1コマ分動かす。消すときは true を返す */
+    private boolean updatePrincipal(Shot s, long now, float dt) {
+        switch (s.type) {
+            case STAMP:
+                if (!s.landed && now >= s.dropAt) {
+                    s.landed = true; // ドン！
+                    if (listener != null) post(() -> listener.onImpact());
+                }
+                return now > s.dropAt + STAMP_HIT_MS + STAMP_MARK_MS;
+            case RING:
+                s.w += s.vx * dt;       // 広がる
+                s.gapDir += s.spin * dt; // すき間が回る（第1形態は spin が0なので回らない）
+                return s.w > Math.hypot(arena.width(), arena.height()) / 2 + s.h;
+            case HAND:
+                if (now < s.dropAt) return false;
+                s.angle += s.spin * dt;
+                if (now >= s.flipAt) {
+                    s.spin = -s.spin; // 逆回り！
+                    s.flipAt += s.flipEvery;
+                }
+                return false;
+            case WAVE:
+                s.x += s.vx * dt; // 流れる
+                return false;
+            case PAPER:
+                if (now < s.dropAt || s.landed) return false;
+                s.y += s.vy * dt; // 落ちる
+                float land = paperTop[s.col] - s.h / 2;
+                if (s.y >= land) {
+                    s.y = land;          // 山の上に乗る
+                    s.landed = true;
+                    paperTop[s.col] -= s.h;
+                }
+                return false;
+            default: // BELL：動かない
+                return false;
+        }
+    }
+
+    /** 音波：今の通り道の半分のはば（はじめは広く、だんだんせまくなる） */
+    private float waveHalf(Shot s, long now) {
+        float p = Math.min(1f, (now - s.born) / (float) WAVE_OPEN_MS);
+        float open = arena.height();
+        return open + (s.gapDir - open) * p;
+    }
+
+    /** 音波：横の位置 x での、通り道のまん中の高さ */
+    private float waveCenter(Shot s, float x) {
+        return arena.centerY() + s.h * (float) Math.sin(2 * Math.PI * (x - arena.left + s.x) / s.w);
+    }
+
     /** ハートが物に当たっているか（物の向きに合わせて調べる） */
-    private boolean hits(Shot s) {
+    private boolean hits(Shot s, long now) {
         float r = heartSize * 0.3f; // ハートの当たり判定は、見た目より少し小さく
+        switch (s.type) {
+            case STAMP: // 押されてから少しの間だけ
+                if (now < s.dropAt || now > s.dropAt + STAMP_HIT_MS) return false;
+                return Math.hypot(heartX - s.x, heartY - s.y) < s.w / 2 + r;
+            case BELL:
+                if (now < s.dropAt) return false;
+                return Math.hypot(heartX - s.x, heartY - s.y) < s.w / 2 + r;
+            case RING: {
+                double dist = Math.hypot(heartX - s.x, heartY - s.y);
+                if (Math.abs(dist - s.w) > s.h / 2 + r) return false; // 輪の上にいない
+                double deg = Math.toDegrees(Math.atan2(heartY - s.y, heartX - s.x));
+                // すき間は向かい合わせに2つ（180度ちがい）なので、近い方のすき間との差（0〜90度）
+                double diff = Math.abs(((deg - s.gapDir) % 180 + 270) % 180 - 90);
+                double margin = Math.toDegrees(r / Math.max(1, dist)); // ハートの大きさの分
+                return diff > RING_GAP_DEG / 2 - margin;
+            }
+            case HAND: {
+                if (now < s.dropAt) return false;
+                double a = Math.toRadians(s.angle);
+                float dx = heartX - s.x;
+                float dy = heartY - s.y;
+                double along = dx * Math.cos(a) + dy * Math.sin(a);     // 針にそった長さ
+                double side = -dx * Math.sin(a) + dy * Math.cos(a);     // 針からのはなれ
+                return along > -s.h && along < s.w && Math.abs(side) < s.h / 2 + r;
+            }
+            case WAVE:
+                return Math.abs(heartY - waveCenter(s, heartX)) > waveHalf(s, now) - r;
+            case PAPER: // 落ちている書類も、積もった書類も当たる
+                if (now < s.dropAt) return false;
+                return Math.abs(heartX - s.x) < s.w / 2 + r && Math.abs(heartY - s.y) < s.h / 2 + r;
+        }
         double rad = Math.toRadians(s.angle);
         float dx = heartX - s.x;
         float dy = heartY - s.y;
@@ -576,6 +873,10 @@ public class DodgeView extends View {
 
     /** 物を1つ描く */
     private void drawShot(Canvas canvas, Shot s, long now) {
+        if (s.type >= STAMP) {
+            drawPrincipal(canvas, s, now);
+            return;
+        }
         if (s.snipe && now < s.dashAt) {
             // 狙い撃ちの予告線：狙っている間はうすく、向きを固定したら点めつ
             boolean locked = now >= s.lockAt;
@@ -603,6 +904,148 @@ public class DodgeView extends View {
         dst.set(-s.w / 2, -s.h / 2, s.w / 2, s.h / 2);
         canvas.drawBitmap(b, null, dst, pixel);
         canvas.restore();
+    }
+
+    /** 校長のこうげきを描く */
+    private void drawPrincipal(Canvas canvas, Shot s, long now) {
+        switch (s.type) {
+            case STAMP: {
+                float r = s.w / 2;
+                if (now < s.dropAt) {
+                    // 予告：赤い丸が点めつ。押される直前は、上からハンコが下りてくる
+                    soft.setColor((now / 110) % 2 == 0 ? 0x55FF3030 : 0x26FF3030);
+                    canvas.drawCircle(s.x, s.y, r, soft);
+                    line.setStrokeWidth(2 * dp);
+                    line.setColor(0xCCFF5050);
+                    canvas.drawCircle(s.x, s.y, r, line);
+                    long left = s.dropAt - now;
+                    if (left < 220) {
+                        float lift = r * 3f * left / 220f;
+                        drawStampBody(canvas, s.x, s.y - lift, r);
+                    }
+                } else {
+                    // 押したあと：赤いハンコのあと（だんだん消える）
+                    float fade = 1f - Math.min(1f, (now - s.dropAt) / (float) (STAMP_HIT_MS + STAMP_MARK_MS));
+                    int alpha = (int) (255 * fade);
+                    line.setStrokeWidth(r * 0.14f);
+                    line.setColor((alpha << 24) | 0xE53935);
+                    canvas.drawCircle(s.x, s.y, r * 0.88f, line);
+                    text.setColor((alpha << 24) | 0xE53935);
+                    text.setTextSize(r * 0.62f);
+                    canvas.drawText("校長", s.x, s.y + r * 0.22f, text);
+                    if (now < s.dropAt + STAMP_HIT_MS) drawStampBody(canvas, s.x, s.y, r);
+                }
+                break;
+            }
+            case BELL: {
+                // 金色の鐘。さわると痛くなるまでは点めつ
+                if (now < s.dropAt && (now / 100) % 2 == 0) break;
+                float r = s.w / 2;
+                soft.setColor(0xFFFFC107);
+                canvas.drawCircle(s.x, s.y, r, soft);
+                soft.setColor(0xFFFFE082);
+                canvas.drawCircle(s.x - r * 0.3f, s.y - r * 0.3f, r * 0.35f, soft);
+                soft.setColor(0xFF8D6E00);
+                canvas.drawCircle(s.x, s.y + r * 0.55f, r * 0.22f, soft); // 鐘の玉
+                break;
+            }
+            case RING: {
+                // 黄色い音の輪（向かい合わせの2つのすき間の所は描かない）
+                line.setStrokeWidth(s.h);
+                line.setColor(0xFFFFE082);
+                dst.set(s.x - s.w, s.y - s.w, s.x + s.w, s.y + s.w);
+                canvas.drawArc(dst, s.gapDir + RING_GAP_DEG / 2, 180 - RING_GAP_DEG, false, line);
+                canvas.drawArc(dst, s.gapDir + 180 + RING_GAP_DEG / 2, 180 - RING_GAP_DEG, false, line);
+                break;
+            }
+            case HAND: {
+                if (s.face) {
+                    // 時計の文字ばん（うすく。当たらない）
+                    float fr = Math.min(arena.width(), arena.height()) / 2 * 0.92f;
+                    line.setStrokeWidth(2 * dp);
+                    line.setColor(0x44FFFFFF);
+                    canvas.drawCircle(s.x, s.y, fr, line);
+                    line.setStrokeWidth(3 * dp);
+                    for (int k = 0; k < 12; k++) {
+                        double a = Math.toRadians(k * 30);
+                        canvas.drawLine(s.x + (float) Math.cos(a) * fr * 0.88f, s.y + (float) Math.sin(a) * fr * 0.88f,
+                                s.x + (float) Math.cos(a) * fr, s.y + (float) Math.sin(a) * fr, line);
+                    }
+                }
+                // 針：出てすぐはうすく点めつ。逆回りの前は赤く点めつ
+                int color = 0xFFFFFFFF;
+                if (now < s.dropAt) color = (now / 100) % 2 == 0 ? 0x66FFFFFF : 0x22FFFFFF;
+                else if (now > s.flipAt - FLIP_WARN_MS) color = (now / 80) % 2 == 0 ? 0xFFFF5252 : 0xFFFFFFFF;
+                line.setStrokeWidth(s.h);
+                line.setColor(color);
+                double a = Math.toRadians(s.angle);
+                canvas.drawLine(s.x, s.y, s.x + (float) Math.cos(a) * s.w, s.y + (float) Math.sin(a) * s.w, line);
+                soft.setColor(0xFFFFD54F);
+                canvas.drawCircle(s.x, s.y, heartSize * 0.4f, soft); // まん中の軸
+                break;
+            }
+            case PAPER: {
+                if (now < s.dropAt) {
+                    // 予告：落ちてくる列が、うすく点めつ
+                    float colW = arena.width() / paperCols;
+                    float cx = arena.left + (s.col + 0.5f) * colW;
+                    soft.setColor((now / 100) % 2 == 0 ? 0x33FFFFFF : 0x14FFFFFF);
+                    canvas.drawRect(cx - colW / 2, arena.top, cx + colW / 2, paperTop[s.col], soft);
+                    break;
+                }
+                // 白い紙に、文字の線とふち（積もった紙は少し暗く）
+                float l = s.x - s.w / 2, t = s.y - s.h / 2, rr = s.x + s.w / 2, b = s.y + s.h / 2;
+                soft.setColor(s.landed ? 0xFFDCD8CC : 0xFFFAF8F0);
+                canvas.drawRect(l, t, rr, b, soft);
+                line.setStrokeWidth(Math.max(1, s.h * 0.08f));
+                line.setColor(0xFF9E9A90);
+                for (int k = 1; k <= 3; k++) {
+                    float y = t + s.h * k / 4f;
+                    canvas.drawLine(l + s.w * 0.12f, y, rr - s.w * (k == 3 ? 0.35f : 0.12f), y, line);
+                }
+                line.setColor(0xFF6D6A62);
+                canvas.drawRect(l, t, rr, b, line);
+                break;
+            }
+            case WAVE: {
+                // 通り道の上と下を、水色の音波でぬる
+                float half = waveHalf(s, now);
+                float step = 4 * dp;
+                soft.setColor(0x5540C4FF);
+                for (int side = -1; side <= 1; side += 2) {
+                    path.reset();
+                    path.moveTo(arena.left, side < 0 ? arena.top : arena.bottom);
+                    for (float x = arena.left; x <= arena.right + step; x += step) {
+                        path.lineTo(x, waveCenter(s, x) + side * half);
+                    }
+                    path.lineTo(arena.right + step, side < 0 ? arena.top : arena.bottom);
+                    path.close();
+                    canvas.drawPath(path, soft);
+                }
+                // ふちの波線
+                line.setStrokeWidth(3 * dp);
+                line.setColor(0xFF80D8FF);
+                for (int side = -1; side <= 1; side += 2) {
+                    path.reset();
+                    for (float x = arena.left; x <= arena.right + step; x += step) {
+                        float y = waveCenter(s, x) + side * half;
+                        if (x == arena.left) path.moveTo(x, y); else path.lineTo(x, y);
+                    }
+                    canvas.drawPath(path, line);
+                }
+                break;
+            }
+        }
+    }
+
+    /** ハンコの本体（茶色い持ち手＋赤い印面） */
+    private void drawStampBody(Canvas canvas, float x, float bottom, float r) {
+        soft.setColor(0xFF8D5A3B);
+        canvas.drawRect(x - r * 0.45f, bottom - r * 2.2f, x + r * 0.45f, bottom - r * 0.25f, soft);
+        soft.setColor(0xFFA86F4C);
+        canvas.drawRect(x - r * 0.45f, bottom - r * 2.2f, x - r * 0.2f, bottom - r * 0.25f, soft);
+        soft.setColor(0xFFC62828);
+        canvas.drawRect(x - r * 0.6f, bottom - r * 0.3f, x + r * 0.6f, bottom, soft);
     }
 
     // ===================== 指でなぞる =====================

@@ -114,8 +114,8 @@ public class StatusActivity extends AppCompatActivity {
         @Override
         public void run() {
             step = (step + 1) % 4;
-            // 横20・縦28ドットの絵を作って、ぼかさずに大きく表示する
-            Bitmap bmp = Bitmap.createBitmap(20, 28, Bitmap.Config.ARGB_8888);
+            // 主人公のドット絵と同じ大きさの絵を作って、ぼかさずに大きく表示する
+            Bitmap bmp = Bitmap.createBitmap(CharacterSprite.WIDTH, CharacterSprite.HEIGHT, Bitmap.Config.ARGB_8888);
             hero.draw(new Canvas(bmp), 0, 0, 1, step);
             BitmapDrawable d = new BitmapDrawable(getResources(), bmp);
             d.setFilterBitmap(false); // ドット絵をぼかさない

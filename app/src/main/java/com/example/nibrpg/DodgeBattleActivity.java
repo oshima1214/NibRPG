@@ -36,7 +36,8 @@ public class DodgeBattleActivity extends AppCompatActivity {
     private static final long BETWEEN_MS = 1800;    // こうげきとこうげきの間の時間
 
     // 第1形態で出す順番（1種類ずつ）。パソコンは第2形態だけ
-    private static final int[] PHASE1 = { DodgeView.CHALK, DodgeView.PEN, DodgeView.MOUSE };
+    private static final int[] PRINCIPAL_PHASE1 = { DodgeView.P_STAMP, DodgeView.P_CHIME, DodgeView.P_CLOCK }; // 校長：第1形態
+    private static final int[] PRINCIPAL_PHASE2 = { DodgeView.P_CLOCK_STAMP, DodgeView.P_PAPERS, DodgeView.P_CHIME_SPIN }; // 校長：第2形態
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Random random = new Random();
@@ -185,50 +186,42 @@ public class DodgeBattleActivity extends AppCompatActivity {
     /** 先生のこうげきを始める */
     private void nextWave() {
         if (finished) return;
-        int[] kinds;
-        float speed;
-        float density;
-        if (!phase2) {
-            // 第1形態：1種類ずつ、順番に
-            kinds = new int[] { PHASE1[wave % PHASE1.length] };
-            speed = 1f;
-            density = BattleData.DODGE_DENSITY;
-            waveLength = BattleData.DODGE_WAVE_MS;
-        } else if (boss) {
+        if (boss) {
             // 理事長戦：決まった攻撃パターンを、順番に1つずつ（わくがせまくなったら速くなる）
             int pat = wave % DodgeView.PATTERN_COUNT;
             wave++;
             float bossSpeed = shrunk ? BattleData.BOSS_DODGE_SPEED_SHRUNK : BattleData.BOSS_DODGE_SPEED;
+            // マウスの追いかけは、わくがせまくなっても速くしない（せまいと逃げにくいため）
+            if (pat == DodgeView.P_MOUSE_HOMING) bossSpeed = BattleData.BOSS_DODGE_SPEED;
+            final float patSpeed = bossSpeed; // 下の「あとで動く処理」で使うため
             waveLength = BattleData.BOSS_DODGE_WAVE_MS;
             long lineMs = TypeWriter.show(txtLine, getResources().getStringArray(R.array.boss_pattern_lines)[pat]);
             txtMessage.setText(getString(R.string.dodge_wave, teacherName));
             // セリフを全部出してから、こうげき開始
             handler.postDelayed(() -> {
                 if (finished) return;
-                dodgeView.startPatternWave(pat, bossSpeed, waveLength);
+                dodgeView.startPatternWave(pat, patSpeed, waveLength);
                 beginWave();
             }, lineMs);
             return;
-        } else {
-            // 第2形態：パソコンは必ず降ってくる ＋ 第1形態の物が1種類まざる・速い
-            kinds = new int[] { PHASE1[random.nextInt(PHASE1.length)], DodgeView.PC };
-            speed = BattleData.DODGE_SPEED2;
-            density = BattleData.DODGE_DENSITY2;
-            waveLength = BattleData.DODGE_WAVE2_MS;
         }
-        wave++;
 
-        // 先生のこうげきのセリフ（いちばん目の種類のもの）
-        String[] lines = getResources().getStringArray(R.array.dodge_attack_lines);
-        long lineMs = TypeWriter.show(txtLine, lines[kinds[0]]);
+        // 校長戦：決まった攻撃パターンを順番に
+        //   第1形態：ハンコ連打 → チャイムの輪 → 時計の針
+        //   第2形態（HP半分から・速い）：時計の針＋ハンコ → 書類の山 → チャイムの輪（すき間が回る）
+        int[] set = phase2 ? PRINCIPAL_PHASE2 : PRINCIPAL_PHASE1;
+        int pat = set[wave % set.length];
+        wave++;
+        final float sp = phase2 ? BattleData.DODGE_SPEED2 : 1f;
+        waveLength = phase2 ? BattleData.DODGE_WAVE2_MS : BattleData.DODGE_WAVE_MS;
+        String[] lines = getResources().getStringArray(R.array.principal_pattern_lines);
+        long lineMs = TypeWriter.show(txtLine, lines[pat - DodgeView.P_STAMP]);
         txtMessage.setText(getString(R.string.dodge_wave, teacherName));
 
         // セリフを全部出してから、こうげき開始
-        final int[] k = kinds;
-        final float sp = speed, de = density;
         handler.postDelayed(() -> {
             if (finished) return;
-            dodgeView.startWave(k, sp, de, waveLength);
+            dodgeView.startPatternWave(pat, sp, waveLength);
             beginWave();
         }, lineMs);
     }

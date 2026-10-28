@@ -302,6 +302,16 @@
     <string name="dodge_phase2">%1$sが本気になった！ こうげきが激しくなる！</string>
     <string name="dodge_teacher_lose">「見事だ…。だが、さらなる高みを目指しなさい。この学校には、まだ上がいる…」</string>
     <!-- こうげきのときのセリフ（チョーク・ペン・マウス・パソコンの順） -->
+    <!-- 校長戦の攻撃パターンのセリフ（ハンコ・チャイム・時計の針・マイクの音波・針＋ハンコ・書類の山・回るチャイムの順） -->
+    <string-array name="principal_pattern_lines">
+        <item>「では、一枚ずつ確認していきましょうか。」</item>
+        <item>「チャイムが鳴りましたね。静かに聞きなさい。」</item>
+        <item>「時間は、待ってはくれませんよ。」</item>
+        <item>「えー…少し、長い話になりますが。」</item>
+        <item>「書類も、時間も。どちらもおろそかにしてはいけません。」</item>
+        <item>「確認する書類が、まだこんなに残っていますね。」</item>
+        <item>「チャイムの音を、よく聞いて動きなさい。」</item>
+    </string-array>
     <string-array name="dodge_attack_lines">
         <item>「チョーク投げは、昔から得意でね」</item>
         <item>「赤ペンの雨を受けてみよ！」</item>

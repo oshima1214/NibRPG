@@ -27,6 +27,10 @@ public class CharacterSprite {
     // ボトムス：0 ズボン、1 スカート
     public int pantsStyle = 0;
 
+    // 絵の大きさ（ドット）：横18・縦48。先生と同じくらいの等身
+    public static final int WIDTH = 18;
+    public static final int HEIGHT = 48;
+
     // 向き：0 正面、1 右、2 後ろ、3 左
     public static final int FRONT = 0;
     public static final int RIGHT = 1;
@@ -112,14 +116,28 @@ public class CharacterSprite {
 
     // 色を少し暗くする
     private int dark(int color) {
+        return dark(color, 0.75f);
+    }
+
+    // 色を k 倍に暗くする
+    private int dark(int color, float k) {
         return Color.rgb(
-                (int) (Color.red(color) * 0.75f),
-                (int) (Color.green(color) * 0.75f),
-                (int) (Color.blue(color) * 0.75f)
+                (int) (Color.red(color) * k),
+                (int) (Color.green(color) * k),
+                (int) (Color.blue(color) * k)
         );
     }
 
-    // ドットを描く
+    // 髪のつや用に、色を明るくする
+    private int light(int color) {
+        return Color.rgb(
+                Math.min(255, (int) (Color.red(color) * 1.35f + 20)),
+                Math.min(255, (int) (Color.green(color) * 1.35f + 20)),
+                Math.min(255, (int) (Color.blue(color) * 1.35f + 20))
+        );
+    }
+
+    // ドットを描く（x2・y2 はふくまない）
     private void rect(
             Canvas c,
             int x1, int y1,
@@ -129,6 +147,11 @@ public class CharacterSprite {
         paint.setColor(color);
         c.drawRect(x1, y1, x2, y2, paint);
     }
+
+    private static final int SHADOW = 0x66505F68;          // 地面の影
+    private static final int SOLE = Color.LTGRAY;          // くつの底
+    private static final int EYE_DARK = Color.rgb(35, 39, 50);
+    private static final int INNER = Color.rgb(224, 227, 230); // ジャケットの中の服
 
     // 以前の呼び出しは静止ポーズを描画する（キャラクリもそのまま動く）
     public void draw(
@@ -149,348 +172,280 @@ public class CharacterSprite {
 
         int frame = (walkFrame == 1 || walkFrame == 2) ? walkFrame : 0;
         int dir = ((direction % 4) + 4) % 4;
-        int eyeDark = Color.rgb(35, 39, 50);
 
         canvas.save();
         canvas.translate(x, y);
         canvas.scale(scale, scale);
 
-
-        // 左右向きは専用の全身描画を使う
         if (dir == RIGHT || dir == LEFT) {
-            drawSide(canvas, dir, eyeDark, frame);
-            canvas.restore();
-            return;
+            // 左向きは、右向きの絵を左右反転する
+            if (dir == LEFT) {
+                canvas.translate(WIDTH, 0f);
+                canvas.scale(-1f, 1f);
+            }
+            drawSide(canvas, frame);
+        } else {
+            drawFrontBack(canvas, dir == BACK, frame);
         }
+        canvas.restore();
+    }
 
+    // 正面・後ろ向き
+    private void drawFrontBack(Canvas c, boolean back, int frame) {
+        // 足を交互に1ドットずらす（腕は足と逆）
+        int lf = frame == 1 ? -1 : (frame == 2 ? 1 : 0);
+        int rf = -lf;
 
-        // 地面の影
-        rect(canvas, 3, 27, 17, 28, 0x66505F68);
-
-        // 足を交互に1ドットずらす。直立(frame=0)は旧描画と完全に同じ。
-        int leftFootShift = frame == 1 ? -1 : (frame == 2 ? 1 : 0);
-        int rightFootShift = -leftFootShift;
+        rect(c, 3, 46, 15, 47, SHADOW);
 
         // ズボン・スカート
         if (pantsStyle == 0) {
-            rect(canvas, 5, 17, 10, 25 + leftFootShift, pants);
-            rect(canvas, 11, 17, 16, 25 + rightFootShift, dark(pants));
-
-            rect(canvas, 6, 18, 9, 24 + leftFootShift, pants);
-            rect(canvas, 12, 18, 15, 24 + rightFootShift, dark(pants));
+            rect(c, 5, 29, 9, 44 + lf, pants);
+            rect(c, 9, 29, 13, 44 + rf, dark(pants));
         } else {
-            rect(canvas, 4, 17, 17, 22, pants);
-            rect(canvas, 5, 17, 16, 21, pants);
-
-            rect(canvas, 7, 21, 10, 25 + leftFootShift, skin);
-            rect(canvas, 12, 21, 15, 25 + rightFootShift, skin);
+            rect(c, 5, 35, 8, 44 + lf, skin);
+            rect(c, 10, 35, 13, 44 + rf, skin);
+            rect(c, 4, 29, 14, 35, pants);
+            rect(c, 3, 32, 15, 35, pants);
+            rect(c, 4, 34, 14, 35, dark(pants));
         }
 
-        // 靴：上下差1ドットのみ。元の形と短さを維持。
-        rect(canvas, 4, 24 + leftFootShift, 10, 27 + leftFootShift, shoes);
-        rect(canvas, 11, 24 + rightFootShift, 17, 27 + rightFootShift, shoes);
-        rect(canvas, 5, 24 + leftFootShift, 10, 26 + leftFootShift, shoes);
-        rect(canvas, 12, 24 + rightFootShift, 17, 26 + rightFootShift, shoes);
-
-        rect(canvas, 4, 26 + leftFootShift, 10, 27 + leftFootShift, Color.LTGRAY);
-        rect(canvas, 11, 26 + rightFootShift, 17, 27 + rightFootShift, Color.LTGRAY);
+        // くつ
+        rect(c, 4, 42 + lf, 9, 46 + lf, shoes);
+        rect(c, 9, 42 + rf, 14, 46 + rf, shoes);
+        rect(c, 4, 45 + lf, 9, 46 + lf, SOLE);
+        rect(c, 9, 45 + rf, 14, 46 + rf, SOLE);
 
         // 上着
-        rect(canvas, 5, 11, 16, 20, shirt);
-        rect(canvas, 6, 12, 15, 19, shirt);
-        rect(canvas, 13, 12, 15, 19, dark(shirt));
-
-        // 腕：足と逆のリズムで、上下に1ドットだけ振る。
-        // 肩は固定なので、洋服と腕の付け根に隙間ができない。
-        int leftHandShift = -leftFootShift;
-        int rightHandShift = -rightFootShift;
+        rect(c, 4, 15, 14, 30, shirt);
+        rect(c, 11, 16, 13, 29, dark(shirt));
         if (shirtStyle == 0) {
-            // Tシャツ
-            rect(canvas, 2, 12, 5, 16, shirt);
-            rect(canvas, 16, 12, 19, 16, shirt);
-
-            rect(canvas, 2, 16, 5, 20 + leftHandShift, skin);
-            rect(canvas, 16, 16, 19, 20 + rightHandShift, skin);
+            // Tシャツ：半そで
+            rect(c, 2, 16, 4, 21, shirt);
+            rect(c, 14, 16, 16, 21, shirt);
+            rect(c, 2, 21, 4, 28 - lf, skin);
+            rect(c, 14, 21, 16, 28 - rf, skin);
         } else {
-            // パーカー・ジャケットの長袖
-            rect(canvas, 2, 12, 5, 19 + leftHandShift, shirt);
-            rect(canvas, 16, 12, 19, 19 + rightHandShift, shirt);
-
-            rect(canvas, 2, 19 + leftHandShift, 5, 21 + leftHandShift, skin);
-            rect(canvas, 16, 19 + rightHandShift, 19, 21 + rightHandShift, skin);
+            // パーカー・ジャケット：長そで
+            rect(c, 2, 16, 4, 27 - lf, shirt);
+            rect(c, 14, 16, 16, 27 - rf, shirt);
+            rect(c, 2, 27 - lf, 4, 29 - lf, skin);
+            rect(c, 14, 27 - rf, 16, 29 - rf, skin);
         }
-
         // ジャケットの前開き
-        if (shirtStyle == 2 && dir != BACK) {
-            rect(canvas, 9, 12, 12, 19,
-                    Color.rgb(224, 227, 230));
+        if (shirtStyle == 2 && !back) {
+            rect(c, 8, 16, 10, 29, INNER);
+            rect(c, 7, 16, 8, 21, dark(shirt));
+            rect(c, 10, 16, 11, 21, dark(shirt));
         }
-
-        // パーカーの紐
-        if (shirtStyle == 1 && dir == FRONT) {
-            rect(canvas, 8, 12, 9, 16, Color.WHITE);
-            rect(canvas, 12, 12, 13, 16, Color.WHITE);
-        }
-
-        // 首
-        rect(canvas, 9, 10, 12, 13, skin);
-
-        // 頭
-        rect(canvas, 5, 3, 17, 12, skin);
-
-        rect(canvas, 7, 4, 16, 12, skin);
-
-        // 後ろ向きなら顔の部分も髪で覆う
-        if (dir == BACK) {
-            rect(canvas, 5, 4, 16, 12, hair);
-            rect(canvas, 5, 9, 16, 12, dark(hair));
-        }
-
-        // =========================
-        // 髪型の描画
-        // =========================
-
-        if (hairStyle == 3 && dir == FRONT) {
-
-            // センター分け：中央の前髪を開ける
-            rect(canvas, 4, 2, 17, 5, hair);
-            rect(canvas, 4, 5, 9, 8, hair);
-            rect(canvas, 12, 5, 17, 8, hair);
-
-            // 左右の生え際
-            rect(canvas, 4, 5, 6, 9, hair);
-            rect(canvas, 15, 5, 17, 9, hair);
-
-            // 分け目の影
-            rect(canvas, 8, 5, 9, 6, dark(hair));
-            rect(canvas, 12, 5, 13, 6, dark(hair));
-
-        } else {
-
-            // 共通の髪の上部分
-            rect(canvas, 4, 2, 17, 6, hair);
-            rect(canvas, 4, 5, 6, 9, hair);
-            rect(canvas, 15, 5, 17, 9, hair);
-        }
-
-        // ボブ：顔の左右に髪を伸ばす
-        if (hairStyle == 1 || hairStyle == 2) {
-            rect(canvas, 4, 8, 6, 14, hair);
-            rect(canvas, 15, 8, 17, 14, hair);
-        }
-
-        // ロング：肩より下まで伸ばす
-        if (hairStyle == 2) {
-            rect(canvas, 3, 11, 6, 20, hair);
-            rect(canvas, 15, 11, 18, 20, hair);
-
-            if (dir == BACK) {
-                rect(canvas, 6, 12, 15, 18, hair);
+        // パーカー：前はひも、後ろはフード
+        if (shirtStyle == 1) {
+            if (back) {
+                rect(c, 5, 15, 13, 20, dark(shirt));
+                rect(c, 6, 16, 12, 19, shirt);
+            } else {
+                rect(c, 5, 15, 13, 16, dark(shirt));
+                rect(c, 7, 16, 8, 20, Color.WHITE);
+                rect(c, 10, 16, 11, 20, Color.WHITE);
             }
         }
 
-        // ポニーテール：向き別に結んだ髪を描く
-        if (hairStyle == 4) {
-
-            if (dir == FRONT) {
-
-                // 正面：頭の横から束ねた髪が見える
-                rect(canvas, 16, 8, 19, 16, hair);
-                rect(canvas, 17, 15, 19, 18, dark(hair));
-                rect(canvas, 16, 8, 19, 10, dark(hair));
-
-            } else if (dir == BACK) {
-
-                // 後ろ：中央で結んだ髪
-                rect(canvas, 9, 10, 13, 19, hair);
-                rect(canvas, 9, 10, 13, 12, dark(hair));
-                rect(canvas, 10, 18, 12, 20, dark(hair));
-
-            } else if (dir == RIGHT) {
-
-                // 右向き：後頭部の左側に束ねた髪
-                rect(canvas, 2, 8, 6, 17, hair);
-                rect(canvas, 3, 8, 6, 10, dark(hair));
-                rect(canvas, 2, 16, 5, 18, dark(hair));
-
-            } else if (dir == LEFT) {
-
-                // 左向き：後頭部の右側に束ねた髪
-                rect(canvas, 15, 8, 19, 17, hair);
-                rect(canvas, 15, 8, 18, 10, dark(hair));
-                rect(canvas, 16, 16, 19, 18, dark(hair));
-            }
-        }
-
-        // =========================
-        // 目：以前の2x2ドット＋色付き1ドットに戻す
-        // =========================
-
-        if (dir == FRONT) {
-
-            // 正面は両目
-            rect(canvas, 7, 8, 9, 10, eyeDark);
-            rect(canvas, 12, 8, 14, 10, eyeDark);
-
-            rect(canvas, 8, 8, 9, 9, eyes);
-            rect(canvas, 13, 8, 14, 9, eyes);
-
-        } else if (dir == RIGHT) {
-
-            // 右向きは片目
-            rect(canvas, 12, 8, 14, 10, eyeDark);
-            rect(canvas, 13, 8, 14, 9, eyes);
-
-        } else if (dir == LEFT) {
-
-            // 左向きは片目
-            rect(canvas, 7, 8, 9, 10, eyeDark);
-            rect(canvas, 7, 8, 8, 9, eyes);
-        }
-
-        // 後ろ向きでは目を描かない
-
-        // 後ろ向きパーカーのフード
-        if (shirtStyle == 1 && dir == BACK) {
-            rect(canvas, 6, 11, 15, 15, dark(shirt));
-            rect(canvas, 8, 12, 13, 14, shirt);
-        }
-
-        canvas.restore();
-    }
-
-
-    // 横向きのキャラクターを描画（輪郭なし）
-    private void drawSide(Canvas canvas, int dir, int eyeDark, int frame) {
-
-        canvas.save();
-
-        // 左向きは右向きの絵を左右反転する
-        if (dir == LEFT) {
-            canvas.translate(20f, 0f);
-            canvas.scale(-1f, 1f);
-        }
-
-        // 地面の影
-        rect(canvas, 3, 27, 17, 28, 0x66505F68);
-
-        // 長い髪は体の後ろに描く
-        if (hairStyle == 2) {
-            rect(canvas, 3, 9, 8, 19, hair);
-            rect(canvas, 3, 17, 7, 20, dark(hair));
-        }
-
-        // ポニーテールも体の後ろ
-        if (hairStyle == 4) {
-            rect(canvas, 3, 8, 7, 13, hair);
-            rect(canvas, 2, 11, 6, 17, hair);
-            rect(canvas, 3, 16, 6, 19, dark(hair));
-        }
-
-        // 横向きの脚：直立時は調整済みの旧描画をそのまま再現する。
-        // 歩行時だけ足の位置を前後に1ドットずらす。
-        int stride = frame == 1 ? 1 : (frame == 2 ? -1 : 0);
-        int farLegX = 9 - stride;
-        int nearLegX = 10 + stride;
-
-        if (pantsStyle == 0) {
-            rect(canvas, farLegX, 19, farLegX + 3, 25, dark(pants));
-            rect(canvas, nearLegX, 19, nearLegX + 3, 25, pants);
-        } else {
-            rect(canvas, 8, 18, 14, 22, pants);
-            rect(canvas, farLegX, 21, farLegX + 3, 25, skin);
-            rect(canvas, nearLegX, 21, nearLegX + 3, 25, skin);
-        }
-
-        // 靴先は進行方向へ1ドットだけ。左向きは既存処理で左右反転。
-        // 直立は以前の短いつま先（9〜15ドット幅）にする。
-        if (frame == 0) {
-            rect(canvas, 9, 24, 13, 27, dark(shoes));
-            rect(canvas, 10, 24, 14, 27, shoes);
-            rect(canvas, 14, 25, 15, 27, shoes);
-            rect(canvas, 9, 27, 15, 28, Color.LTGRAY);
-        } else {
-            rect(canvas, farLegX, 24, farLegX + 4, 27, dark(shoes));
-            rect(canvas, nearLegX, 24, nearLegX + 4, 27, shoes);
-            rect(canvas, nearLegX + 4, 25, nearLegX + 5, 27, shoes);
-            rect(canvas, farLegX, 27, farLegX + 4, 28, Color.LTGRAY);
-            rect(canvas, nearLegX, 27, nearLegX + 5, 28, Color.LTGRAY);
-        }
-
-        // 横向きの胴体：頭と脚の中心が自然に揃う幅
-        rect(canvas, 7, 11, 14, 20, shirt);
-        rect(canvas, 8, 12, 14, 19, shirt);
-        rect(canvas, 8, 12, 9, 19, dark(shirt));
-
-        // ジャケットの前開き
-        if (shirtStyle == 2) {
-            rect(canvas, 13, 13, 14, 19,
-                    Color.rgb(224, 227, 230));
-        }
-
-        // 横向きの腕：脚とぶつからないx=14以降に固定する。
-        // 手先の位置だけを前後・上下に1ドットずつ動かす。
-        int handShift = frame == 1 ? 1 : (frame == 2 ? -1 : 0);
-        int handX = frame == 1 ? 1 : 0;
-        if (shirtStyle == 0) {
-            rect(canvas, 13, 13, 16, 16, shirt);
-            rect(canvas, 14 + handX, 16, 16 + handX, 20 + handShift, skin);
-        } else {
-            rect(canvas, 13, 13, 16, 19 + handShift, shirt);
-            rect(canvas, 14 + handX, 19 + handShift,
-                    16 + handX, 21 + handShift, skin);
-        }
-
         // 首
-        rect(canvas, 10, 10, 13, 13, skin);
+        rect(c, 8, 13, 10, 16, skin);
 
-        // 横向きの頭（輪郭なし）
-        rect(canvas, 6, 3, 17, 12, skin);
-        rect(canvas, 7, 4, 16, 11, skin);
+        // 頭（下の角を丸く）
+        rect(c, 4, 3, 14, 13, skin);
+        rect(c, 5, 13, 13, 14, skin);
 
-        // 顔の向きが分かるように鼻を出す
-        rect(canvas, 16, 8, 17, 9, skin);
+        // 頭の上の髪（上の角を丸く）
+        rect(c, 4, 1, 14, 3, hair);
+        rect(c, 3, 3, 15, 5, hair);
 
-        // 後頭部と頭頂部は全髪型共通（おでこ側までつなげる）
-        rect(canvas, 5, 2, 18, 6, hair);
-        rect(canvas, 5, 5, 9, 11, hair);
+        if (back) {
+            if (hairStyle == 1 || hairStyle == 2) {
+                // ボブ・ロング：後ろはまるく下ろす
+                rect(c, 3, 5, 15, 13, hair);
+                rect(c, 4, 13, 14, 14, dark(hair, 0.9f));
+                if (hairStyle == 2) {
+                    rect(c, 3, 13, 15, 23, hair);
+                    rect(c, 4, 20, 14, 23, dark(hair, 0.9f));
+                    rect(c, 4, 23, 14, 24, dark(hair, 0.9f));
+                }
+            } else {
+                // 短い髪：えり足に向かってくびれる
+                rect(c, 3, 5, 15, 9, hair);
+                rect(c, 4, 9, 14, 10, hair);
+                rect(c, 5, 10, 13, 11, dark(hair, 0.9f));
+                rect(c, 6, 11, 12, 12, dark(hair, 0.85f));
+                rect(c, 3, 8, 4, 10, skin);
+                rect(c, 14, 8, 15, 10, skin);
+                if (hairStyle == 4) {
+                    // ポニーテール：まん中で結んだ髪
+                    rect(c, 7, 9, 11, 22, hair);
+                    rect(c, 7, 9, 11, 11, dark(hair, 0.7f));
+                    rect(c, 8, 20, 10, 23, dark(hair, 0.9f));
+                }
+            }
+            rect(c, 5, 2, 8, 3, light(hair));
+            return; // 後ろ向きは目を描かない
+        }
 
-        // 髪型ごとに、横から見える前髪と後ろ髪を描き分ける
+        // 前から見た髪
         switch (hairStyle) {
-            case 0: // ショート：短い前髪
-                rect(canvas, 15, 5, 17, 7, hair);
+            case 0: // ショート：左寄りで分けて両側に流す
+                rect(c, 3, 5, 4, 10, hair);
+                rect(c, 14, 5, 15, 10, hair);
+                rect(c, 4, 5, 7, 7, hair);
+                rect(c, 4, 7, 5, 8, hair);
+                rect(c, 8, 5, 14, 6, hair);
+                rect(c, 10, 6, 14, 7, hair);
+                rect(c, 13, 7, 14, 8, hair);
                 break;
 
-            case 1: // ボブ：丸みのある前髪・あご付近までの後ろ髪
-                rect(canvas, 13, 5, 17, 7, hair);
-                rect(canvas, 14, 7, 16, 8, hair);
-                rect(canvas, 4, 8, 8, 14, hair);
-                rect(canvas, 5, 13, 8, 15, hair);
+            case 1: // ボブ
+            case 2: // ロング
+                rect(c, 4, 5, 14, 7, hair);
+                rect(c, 4, 7, 6, 8, hair);
+                rect(c, 12, 7, 14, 8, hair);
+                rect(c, 8, 7, 10, 8, hair);
+                int bottom = hairStyle == 1 ? 15 : 24; // ボブはあごの下、ロングは胸まで
+                rect(c, 3, 5, 5, bottom, hair);
+                rect(c, 13, 5, 15, bottom, hair);
+                rect(c, 3, bottom - 2, 5, bottom, dark(hair, 0.88f));
+                rect(c, 13, bottom - 2, 15, bottom, dark(hair, 0.88f));
                 break;
 
-            case 2: // ロング：やや長い前髪・肩までの後ろ髪
-                rect(canvas, 12, 5, 17, 7, hair);
-                rect(canvas, 14, 7, 16, 8, hair);
-                rect(canvas, 4, 8, 8, 14, hair);
+            case 3: // センター分け
+                rect(c, 3, 5, 4, 10, hair);
+                rect(c, 14, 5, 15, 10, hair);
+                rect(c, 4, 5, 8, 7, hair);
+                rect(c, 10, 5, 14, 7, hair);
+                rect(c, 4, 7, 6, 8, hair);
+                rect(c, 12, 7, 14, 8, hair);
                 break;
 
-            case 3: // センター分け：生え際は覆い、前髪に小さな分け目を作る
-                rect(canvas, 11, 5, 13, 7, hair);
-                rect(canvas, 15, 5, 17, 7, hair);
-                break;
-
-            case 4: // ポニーテール：短めの前髪＋後ろの結び目
-                rect(canvas, 14, 5, 17, 7, hair);
-                rect(canvas, 5, 8, 8, 11, dark(hair));
+            default: // ポニーテール：短い前髪＋頭の横に結んだ髪
+                rect(c, 3, 5, 4, 9, hair);
+                rect(c, 14, 5, 15, 9, hair);
+                rect(c, 4, 5, 14, 6, hair);
+                rect(c, 5, 6, 7, 7, hair);
+                rect(c, 9, 6, 10, 7, hair);
+                rect(c, 12, 6, 14, 7, hair);
+                rect(c, 15, 6, 17, 15, hair);
+                rect(c, 15, 6, 17, 7, dark(hair, 0.7f));
+                rect(c, 15, 13, 17, 15, dark(hair, 0.88f));
                 break;
         }
+        rect(c, 5, 2, 8, 3, light(hair));
 
-        // 横向きは片目だけ
-        rect(canvas, 13, 8, 15, 10, eyeDark);
-        rect(canvas, 14, 8, 15, 9, eyes);
-
-        canvas.restore();
+        // 目：黒目＋左上に白いハイライト
+        rect(c, 6, 8, 8, 11, EYE_DARK);
+        rect(c, 10, 8, 12, 11, EYE_DARK);
+        rect(c, 6, 8, 7, 9, Color.WHITE);
+        rect(c, 10, 8, 11, 9, Color.WHITE);
+        rect(c, 7, 10, 8, 11, eyes);
+        rect(c, 11, 10, 12, 11, eyes);
     }
 
-}
+    // 右向き（左向きはこれを反転して使う）
+    private void drawSide(Canvas c, int frame) {
+        rect(c, 3, 46, 15, 47, SHADOW);
 
+        // 体の後ろの髪（ロング・ポニーテール）
+        if (hairStyle == 2) {
+            rect(c, 2, 12, 7, 24, hair);
+            rect(c, 2, 21, 6, 24, dark(hair, 0.88f));
+        }
+        if (hairStyle == 4) {
+            rect(c, 0, 7, 4, 18, hair);
+            rect(c, 2, 6, 4, 9, dark(hair, 0.7f));
+            rect(c, 0, 15, 3, 18, dark(hair, 0.88f));
+        }
+
+        // 足：歩くときは前後に1ドットずらす
+        int st = frame == 1 ? 1 : (frame == 2 ? -1 : 0);
+        int far = 6 - st;
+        int near = 8 + st;
+        if (pantsStyle == 0) {
+            rect(c, far, 29, far + 4, 44, dark(pants));
+            rect(c, near, 29, near + 4, 44, pants);
+        } else {
+            rect(c, far + 1, 35, far + 4, 44, dark(skin, 0.9f));
+            rect(c, near + 1, 35, near + 4, 44, skin);
+            rect(c, 5, 29, 13, 35, pants);
+            rect(c, 4, 32, 14, 35, pants);
+            rect(c, 4, 34, 14, 35, dark(pants));
+        }
+
+        // くつ（つま先は前に1ドット）
+        if (frame == 0) {
+            rect(c, 6, 42, 11, 45, dark(shoes));
+            rect(c, 8, 42, 12, 45, shoes);
+            rect(c, 12, 43, 13, 45, shoes);
+            rect(c, 6, 45, 13, 46, SOLE);
+        } else {
+            rect(c, far, 42, far + 4, 45, dark(shoes));
+            rect(c, near, 42, near + 4, 45, shoes);
+            rect(c, near + 4, 43, near + 5, 45, shoes);
+            rect(c, far, 45, far + 4, 46, SOLE);
+            rect(c, near, 45, near + 5, 46, SOLE);
+        }
+
+        // 体
+        rect(c, 5, 15, 13, 30, shirt);
+        rect(c, 5, 16, 6, 29, dark(shirt));
+        if (shirtStyle == 2) rect(c, 12, 17, 13, 29, INNER); // ジャケットの前開き
+        if (shirtStyle == 1) rect(c, 5, 15, 9, 19, dark(shirt)); // パーカーのフード
+
+        // 腕：歩くときは前後・上下に1ドットふる
+        int hy = frame == 1 ? 1 : (frame == 2 ? -1 : 0);
+        int hx = frame == 1 ? 1 : (frame == 2 ? -1 : 0);
+        rect(c, 8, 16, 11, 21, dark(shirt, 0.88f));
+        if (shirtStyle == 0) {
+            rect(c, 8 + hx, 21, 11 + hx, 28 + hy, skin);
+            rect(c, 10 + hx, 21, 11 + hx, 28 + hy, dark(skin, 0.88f));
+        } else {
+            rect(c, 8 + hx, 21, 11 + hx, 27 + hy, dark(shirt, 0.88f));
+            rect(c, 8 + hx, 27 + hy, 11 + hx, 29 + hy, skin);
+        }
+
+        // 首・頭（下の角を丸く）
+        rect(c, 8, 13, 11, 16, skin);
+        rect(c, 4, 3, 14, 13, skin);
+        rect(c, 5, 13, 13, 14, skin);
+        rect(c, 14, 9, 15, 10, skin); // 鼻
+
+        // 髪：頭の上・後頭部・おでこ
+        rect(c, 4, 1, 14, 3, hair);
+        rect(c, 3, 3, 15, 5, hair);
+        rect(c, 3, 5, 8, 11, hair);
+        rect(c, 4, 11, 8, 12, hair);
+        rect(c, 3, 5, 14, 7, hair);
+
+        switch (hairStyle) {
+            case 0: // ショート：前に向かって下がる前髪
+                rect(c, 9, 7, 14, 8, hair);
+                rect(c, 12, 8, 14, 9, hair);
+                break;
+            case 1: // ボブ
+            case 2: // ロング
+                rect(c, 10, 7, 14, 8, hair);
+                rect(c, 2, 7, 8, hairStyle == 1 ? 15 : 16, hair);
+                rect(c, 2, 13, 8, 15, dark(hair, 0.88f));
+                break;
+            case 3: // センター分け
+                rect(c, 9, 7, 12, 8, hair);
+                rect(c, 13, 7, 14, 9, hair);
+                break;
+            default: // ポニーテール
+                rect(c, 10, 7, 14, 8, hair);
+                break;
+        }
+        rect(c, 5, 2, 8, 3, light(hair));
+
+        // 目は1つ
+        rect(c, 11, 8, 13, 11, EYE_DARK);
+        rect(c, 11, 8, 12, 9, Color.WHITE);
+        rect(c, 12, 10, 13, 11, eyes);
+    }
+}
