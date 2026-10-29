@@ -76,6 +76,7 @@ public class Achievements {
         if (isUnlocked(a, id)) return;
         prefs(a).edit().putBoolean("a" + id, true).apply();
         String title = a.getResources().getStringArray(R.array.ach_titles)[id];
+        Sound.se(a, R.raw.se_achievement);
         showPopup(a, title);
     }
 

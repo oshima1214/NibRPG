@@ -84,7 +84,10 @@ public class VendingActivity extends AppCompatActivity {
         }
 
         // もどる → マップにもどる（マップの画面は開いたままなので、続きから）
-        findViewById(R.id.btnExit).setOnClickListener(v -> finish());
+        findViewById(R.id.btnExit).setOnClickListener(v -> {
+            Sound.se(this, R.raw.se_cancel);
+            finish();
+        });
 
         refresh();
     }
@@ -94,8 +97,10 @@ public class VendingActivity extends AppCompatActivity {
         ShopData.Goods g = ShopData.ITEMS[i];
         if (GameState.itemCounts[i] >= ShopData.MAX_ITEMS) {
             txtSlot.setText(R.string.vending_full);
+            Sound.se(this, R.raw.se_no_money);
         } else if (GameState.money < g.price) {
             txtSlot.setText(R.string.vending_no_money);
+            Sound.se(this, R.raw.se_no_money);
         } else {
             GameState.money -= g.price;
             GameState.moneySpent += g.price; // 実績のため
@@ -106,7 +111,9 @@ public class VendingActivity extends AppCompatActivity {
             for (boolean b : GameState.boughtItems) if (!b) all = false;
             if (all) Achievements.unlock(this, Achievements.VENDING_ALL);
             txtSlot.setText(getString(R.string.vending_get, g.name));
+            Sound.se(this, R.raw.se_buy);
             showPopup(i);
+            handler.postDelayed(() -> Sound.se(this, R.raw.se_vending_drop), 250); // ガコン
         }
         refresh();
     }
@@ -183,6 +190,18 @@ public class VendingActivity extends AppCompatActivity {
                 pushButtons[i].setBackgroundResource(R.drawable.vending_round);
             }
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Sound.bgm(this, R.raw.bgm_shop);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Sound.pauseBgmSoon();
     }
 
     @Override

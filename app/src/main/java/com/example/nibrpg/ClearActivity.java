@@ -23,6 +23,7 @@ public class ClearActivity extends AppCompatActivity {
         GameState.save(this);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_clear);
+        Sound.jingle(this, R.raw.jg_clear);
         Achievements.checkClear(this); // クリアが条件の実績を調べる
         // 画面のふち（ステータスバーなど）に文字がかぶらないようにする
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -45,7 +46,10 @@ public class ClearActivity extends AppCompatActivity {
         fadeIn.setDuration(700);
         cardCert.startAnimation(fadeIn);
 
-        findViewById(R.id.btnNext).setOnClickListener(v -> goTo(EndrollActivity.class));
+        findViewById(R.id.btnNext).setOnClickListener(v -> {
+            Sound.se(this, R.raw.se_ok);
+            goTo(EndrollActivity.class);
+        });
     }
 
     // 別の画面へ移動して、今の画面は閉じる

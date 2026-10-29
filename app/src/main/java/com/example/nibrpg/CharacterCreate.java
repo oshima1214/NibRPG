@@ -808,6 +808,19 @@ public class CharacterCreate extends Activity {
                 .show();
     }
 
+    // タイトルの曲を、そのまま続ける
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Sound.bgm(this, R.raw.bgm_title);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Sound.pauseBgmSoon();
+    }
+
     // 左側のキャラクター表示
     private class AvatarPreview extends View {
 

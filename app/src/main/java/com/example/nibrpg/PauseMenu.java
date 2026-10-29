@@ -10,12 +10,15 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.core.content.res.ResourcesCompat;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import java.util.function.BooleanSupplier;
 
 /**
  * 戦闘画面の「一時停止」ボタンと、止めている間のメニュー（つづける・リタイア）。
- * 画面のいちばん上に重ねて表示する（レイアウトの xml は変えなくてよい）。
+ * ボタンは戦闘画面の左の列（先生の名前の上）に、メニューは画面のいちばん上に重ねて表示する（レイアウトの xml は変えなくてよい）。
  */
 public class PauseMenu {
 
@@ -44,7 +47,7 @@ public class PauseMenu {
         Typeface dot = ResourcesCompat.getFont(a, R.font.dotgothic16);
         ViewGroup root = a.findViewById(android.R.id.content);
 
-        // 左上の「一時停止」ボタン
+        // 「一時停止」ボタン
         button = new TextView(a);
         button.setText(R.string.pause_button);
         button.setTextColor(0xFFFFFFFF);
@@ -52,12 +55,38 @@ public class PauseMenu {
         button.setTypeface(dot);
         button.setGravity(Gravity.CENTER);
         button.setBackgroundResource(R.drawable.rpg_window);
-        button.setPadding(dp(12), dp(4), dp(12), dp(4));
+        // 指で押しやすい大きさ（48dp くらい）にする
+        button.setMinWidth(dp(64));
+        button.setMinHeight(dp(44));
+        button.setPadding(dp(16), dp(8), dp(16), dp(8));
         button.setOnClickListener(v -> open());
-        FrameLayout.LayoutParams blp = new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP | Gravity.START);
-        blp.setMargins(dp(8), dp(8), 0, 0);
-        root.addView(button, blp);
+        View name = a.findViewById(R.id.txtTeacherName);
+        if (name != null && name.getParent() instanceof LinearLayout) {
+            // 戦闘画面：左の列（先生の名前の上）に置く。
+            // 列の中なら、画面のふち（ステータスバー・カメラの切り欠き）はレイアウト側でよけてあるし、
+            // 先生の名前とも重ならない（名前は、ボタンの下にずれる）
+            LinearLayout column = (LinearLayout) name.getParent();
+            LinearLayout.LayoutParams clp = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            clp.gravity = Gravity.START;
+            clp.bottomMargin = dp(4);
+            column.addView(button, 0, clp);
+        } else {
+            // それ以外の画面：左上に重ねる。画面のふちの下にもぐらないように、その分ずらす。
+            // もぐっていると、タップがスマホ側（ステータスバー）に取られて、ボタンが反応しにくい
+            FrameLayout.LayoutParams blp = new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP | Gravity.START);
+            blp.setMargins(dp(8), dp(8), 0, 0);
+            root.addView(button, blp);
+            ViewCompat.setOnApplyWindowInsetsListener(button, (v, insets) -> {
+                Insets safe = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
+                FrameLayout.LayoutParams p = (FrameLayout.LayoutParams) v.getLayoutParams();
+                p.setMargins(safe.left + dp(8), safe.top + dp(8), 0, 0);
+                v.setLayoutParams(p);
+                return insets;
+            });
+            ViewCompat.requestApplyInsets(button);
+        }
 
         // 止めている間のメニュー（画面全体をうす暗くして、さわれないようにする）
         overlay = new FrameLayout(a);
@@ -79,17 +108,22 @@ public class PauseMenu {
         box.addView(title);
 
         TextView btnContinue = menuButton(a, dot, R.string.pause_continue);
-        btnContinue.setOnClickListener(v -> close());
+        btnContinue.setOnClickListener(v -> {
+            Sound.se(activity, R.raw.se_ok);
+            close();
+        });
         box.addView(btnContinue, buttonParams());
 
         btnRetire = menuButton(a, dot, R.string.pause_retire);
         btnRetire.setOnClickListener(v -> {
             if (!confirm) {
                 confirm = true; // 1回目：確認する
+                Sound.se(activity, R.raw.se_cancel);
                 btnRetire.setText(R.string.pause_retire_confirm);
                 return;
             }
             overlay.setVisibility(View.GONE);
+            Sound.se(activity, R.raw.se_retire);
             onRetire.run();
         });
         box.addView(btnRetire, buttonParams());
@@ -128,6 +162,7 @@ public class PauseMenu {
         confirm = false;
         btnRetire.setText(R.string.pause_retire);
         overlay.setVisibility(View.VISIBLE);
+        Sound.se(activity, R.raw.se_pause);
         onPause.run();
     }
 
@@ -140,6 +175,14 @@ public class PauseMenu {
 
     public boolean isOpen() {
         return overlay.getVisibility() == View.VISIBLE;
+    }
+
+    /** 画面の (x, y)（画面全体での位置）に、一時停止ボタンがあるか */
+    public boolean isOnButton(float x, float y) {
+        if (!button.isShown()) return false;
+        int[] p = new int[2];
+        button.getLocationOnScreen(p);
+        return x >= p[0] && x < p[0] + button.getWidth() && y >= p[1] && y < p[1] + button.getHeight();
     }
 
     private TextView menuButton(Activity a, Typeface dot, int textId) {

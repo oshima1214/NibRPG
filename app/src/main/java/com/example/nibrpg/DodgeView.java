@@ -295,6 +295,7 @@ public class DodgeView extends View {
                     shots.add(s);
                 }
                 patternStep++;
+                Sound.se(getContext(), R.raw.se_chalk_wall);
                 return (long) (850 / speed); // 次の壁まで（短め）
             }
             case P_PEN_SNIPE: {
@@ -320,6 +321,7 @@ public class DodgeView extends View {
                 s.dashAt = s.lockAt + (long) (300 / speed);     // ② 向きを固定して、少し止まる
                 s.dashSpeed = H * 3.2f * speed;                 // ③ 一直線に飛ぶ
                 shots.add(s);
+                Sound.se(getContext(), R.raw.se_pen_lock);
                 return (long) (650 / speed);
             }
             case P_MOUSE_HOMING: {
@@ -341,6 +343,7 @@ public class DodgeView extends View {
                 s.angle = (float) Math.toDegrees(a) + 90;
                 s.homingLeft = 3.0f; // 3秒追いかけたら、まっすぐ飛んでいく
                 shots.add(s);
+                Sound.se(getContext(), R.raw.se_mouse, 0.6f);
                 return (long) (900 / speed);
             }
             case P_STAMP: {
@@ -360,6 +363,7 @@ public class DodgeView extends View {
                     b.y = arena.centerY();
                     b.dropAt = now + BELL_WARN_MS;
                     shots.add(b);
+                    Sound.se(getContext(), R.raw.se_chime); // キーンコーンカーンコーン
                     gapY = random.nextInt(360); // すき間の向き（gapY を角度に使う）
                     patternStep++;
                     return BELL_WARN_MS;
@@ -384,6 +388,7 @@ public class DodgeView extends View {
                     s.spin = (random.nextBoolean() ? 1 : -1) * RING_GAP_SPIN * speed;
                 }
                 shots.add(s);
+                Sound.se(getContext(), R.raw.se_ring, 0.6f);
                 patternStep++;
                 return (long) (RING_EVERY_MS / speed);
             }
@@ -484,6 +489,7 @@ public class DodgeView extends View {
         s.y = Math.max(arena.top + my, Math.min(arena.bottom - my, ty));
         s.dropAt = now + (long) (warnMs / speed); // この時刻に押される
         shots.add(s);
+        Sound.se(getContext(), R.raw.se_stamp_warn, 0.5f);
     }
 
     /** 時計の針を出す：長い針（わくのはしまで）と短い針。はじめはハートと反対を向く */
@@ -702,6 +708,7 @@ public class DodgeView extends View {
             s.y += s.vy * dt;
             if (s.type == PC && !s.landed && s.y + s.h / 2 >= arena.bottom) {
                 s.landed = true; // ドスン！
+                Sound.se(getContext(), R.raw.se_pc_impact);
                 if (listener != null) post(() -> listener.onImpact());
             }
             if (s.type == MOUSE && s.homingLeft > 0) {
@@ -817,6 +824,7 @@ public class DodgeView extends View {
             case STAMP:
                 if (!s.landed && now >= s.dropAt) {
                     s.landed = true; // ドン！
+                    Sound.se(getContext(), R.raw.se_stamp);
                     if (listener != null) post(() -> listener.onImpact());
                 }
                 return now > s.dropAt + STAMP_HIT_MS + STAMP_MARK_MS;
@@ -827,9 +835,14 @@ public class DodgeView extends View {
             case HAND:
                 if (now < s.dropAt) return false;
                 s.angle += s.spin * dt;
+                if (!s.landed && s.flipAt != Long.MAX_VALUE && now > s.flipAt - FLIP_WARN_MS) {
+                    s.landed = true; // 逆回りの前の警告音（1回だけ）
+                    Sound.se(getContext(), R.raw.se_clock_warn);
+                }
                 if (now >= s.flipAt) {
                     s.spin = -s.spin; // 逆回り！
                     s.flipAt += s.flipEvery;
+                    s.landed = false;
                 }
                 return false;
             case WAVE:
@@ -843,6 +856,7 @@ public class DodgeView extends View {
                     s.y = land;          // 山の上に乗る
                     s.landed = true;
                     paperTop[s.col] -= s.h;
+                    Sound.se(getContext(), R.raw.se_paper, 0.7f);
                 }
                 return false;
             default: // BELL：動かない
@@ -1082,6 +1096,15 @@ public class DodgeView extends View {
     }
 
     // ===================== 指でなぞる =====================
+
+    /** ハートを (dx, dy) だけ動かす（画面のどこをなぞっても動かせるように、戦闘画面から呼ぶ） */
+    public void dragBy(float dx, float dy) {
+        if (paused) return; // 止めている間は、ハートを動かさない
+        float half = heartSize / 2;
+        heartX = Math.max(arena.left + half, Math.min(arena.right - half, heartX + dx));
+        heartY = Math.max(arena.top + half, Math.min(arena.bottom - half, heartY + dy));
+        if (!running) invalidate();
+    }
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {

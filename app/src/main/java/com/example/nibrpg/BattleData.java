@@ -33,6 +33,8 @@ public class BattleData {
     public static final boolean[] HAS_BATTLE = { false, true, true, true, true };
 
     // 階ごとの先生の強さ（0番目は1F＝先生なし）
+    // 戦闘中のBGM（階ごと。1F は先生なし、5F の校長はよけゲームの画面で決める）
+    public static final int[] FLOOR_BGM = { 0, R.raw.bgm_floor2, R.raw.bgm_floor3, R.raw.bgm_floor4, R.raw.bgm_principal };
     public static final int[] TEACHER_HP = { 0, 30, 40, 50, 75 };
     public static final int[] TEACHER_ATTACK = { 0, 12, 15, 14, 22 }; // 失敗したときの精神的ダメージ
 

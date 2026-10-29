@@ -108,6 +108,18 @@ public class EndrollActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        Sound.bgm(this, R.raw.bgm_ending);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Sound.pauseBgmSoon();
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         handler.removeCallbacksAndMessages(null); // 画面を閉じたら動きを止める

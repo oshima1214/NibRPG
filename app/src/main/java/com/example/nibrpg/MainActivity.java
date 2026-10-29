@@ -66,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btnMenu).setOnClickListener(v -> {
             if (talking) return;
             stopWalking();
+            Sound.se(this, R.raw.se_menu_open);
             startActivity(new Intent(this, StatusActivity.class));
         });
 
@@ -176,6 +177,7 @@ public class MainActivity extends AppCompatActivity {
             case 'L': // 理事長室の扉：鍵がないと開かない
                 stopWalking();
                 if (!GameState.bossKey) {
+                    Sound.se(this, R.raw.se_locked);
                     showInfo(getString(R.string.boss_door_locked));      // 鍵を持っていない
                 } else if (!GameState.doorUnlocked) {
                     useKey(nx, ny);                                       // はじめて：鍵を使うか聞く
@@ -191,6 +193,7 @@ public class MainActivity extends AppCompatActivity {
         GameState.px = nx;
         GameState.py = ny;
         mapView.onPlayerStepped(); // 移動できたときだけ歩行アニメーション（描き直しもする）
+        Sound.se(this, R.raw.se_step, 0.4f);
         pickUpLost();
     }
 
@@ -202,6 +205,7 @@ public class MainActivity extends AppCompatActivity {
                     || l.x != GameState.px || l.y != GameState.py) continue;
             GameState.foundLost[i] = true;
             stopWalking();
+            Sound.se(this, R.raw.se_pickup);
             showInfo(getString(R.string.lost_found, getString(l.name),
                     GameState.foundCount(), MapData.LOST_ITEMS.length));
             mapView.invalidate();
@@ -297,6 +301,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        updateBgm();
         updateStatus();
         mapView.invalidate(); // 戦闘や買い物のあとの状態で描き直す
         GameState.save(this); // オートセーブ（戦闘で勝った・買い物をした、などを保存）
@@ -306,7 +311,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         stopWalking();
         super.onPause();
+        Sound.pauseBgmSoon();
         GameState.save(this); // オートセーブ（マップを離れるとき・アプリを閉じるとき）
+    }
+
+    /** 場所に合わせてBGMを流す（理事長室の中は、不気味な曲） */
+    private void updateBgm() {
+        boolean inRoom = GameState.floor == MapData.BOSS_FLOOR && GameState.px <= MapData.BOSS_ROOM_RIGHT;
+        Sound.bgm(this, inRoom ? R.raw.bgm_rijicho_room : R.raw.bgm_map);
     }
 
     private void updateStatus() {
@@ -358,6 +370,7 @@ public class MainActivity extends AppCompatActivity {
         GameState.floor = target;
         GameState.visited[target] = true;
         standNextTo('/');
+        Sound.se(this, R.raw.se_stairs);
         showFloor();
     }
 
@@ -379,6 +392,8 @@ public class MainActivity extends AppCompatActivity {
                     List<int[]> other = groups.get(pair);
                     int[] door = other.get(Math.min(i, other.size() - 1));
                     standInside(door[0], door[1]);
+                    Sound.se(this, R.raw.se_door);
+                    updateBgm(); // 理事長室に入った・出たときは曲を変える
                     mapView.invalidate();
                     return;
                 }
@@ -515,6 +530,7 @@ public class MainActivity extends AppCompatActivity {
                 new String[] { getString(R.string.btn_yes), getString(R.string.btn_no) },
                 new Runnable[] { () -> {
                     GameState.doorUnlocked = true; // 一度開けたら、次からはそのまま通れる
+                    Sound.se(this, R.raw.se_key);
                     GameState.save(this);
                     goThroughDoor(x, y);
                 }, null });
@@ -544,6 +560,7 @@ public class MainActivity extends AppCompatActivity {
             lp.setMarginStart(dp(8));
             btn.setLayoutParams(lp);
             btn.setOnClickListener(v -> {
+                Sound.se(this, R.raw.se_ok);
                 talking = false;
                 msgBox.setVisibility(View.GONE);
                 if (action != null) action.run();

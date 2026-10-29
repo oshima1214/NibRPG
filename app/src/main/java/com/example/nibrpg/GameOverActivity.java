@@ -29,6 +29,8 @@ public class GameOverActivity extends AppCompatActivity {
             return insets;
         });
 
+        Sound.jingle(this, R.raw.jg_lose);
+
         // 何人目の先生に負けたかを受け取る（1〜4。わからないときは4＝校長）
         int teacher = getIntent().getIntExtra(EXTRA_TEACHER, 4);
 
@@ -77,11 +79,13 @@ public class GameOverActivity extends AppCompatActivity {
         findViewById(R.id.main).setBackgroundResource(bg);
 
         findViewById(R.id.btnRetry).setOnClickListener(v -> {
+            Sound.se(this, R.raw.se_ok);
             GameState.hp = GameState.maxHp; // HPを全部回復してから再挑戦
             GameState.save(this);
             goTo(MainActivity.class);
         });
         findViewById(R.id.btnTitle).setOnClickListener(v -> {
+            Sound.se(this, R.raw.se_ok);
             // 続きは、タイトルの「つづきから」で遊べる（負けた場所から、HPは全部回復）
             GameState.hp = GameState.maxHp;
             GameState.save(this);

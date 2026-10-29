@@ -228,8 +228,19 @@
     <string name="end_tool_dev">Android Studio</string>
     <string name="end_label_ai">AI</string>
     <string name="end_tool_ai1">Claude</string>
+    <string name="end_tool_ai1_role">効果音作成・BGM作成・コーディング支援</string>
     <string name="end_tool_ai2">ChatGPT</string>
+    <string name="end_tool_ai2_role">コーディング支援</string>
     <string name="end_tool_ai3">Gemini（Nano Banana）</string>
+    <string name="end_tool_ai3_role">画像生成</string>
+
+    <string name="end_head_sound">― サウンド ―</string>
+    <string name="end_label_bgm">BGM</string>
+    <string name="end_sound_bgm">Pixabay</string>
+    <string name="end_sound_bgm_url">pixabay.com</string>
+    <string name="end_label_se">効果音</string>
+    <string name="end_sound_se">効果音ラボ</string>
+    <string name="end_sound_se_url">soundeffect-lab.info</string>
 
     <string name="end_head_thanks">― Special Thanks ―</string>
     <string name="end_thanks1">日本海情報ビジネス専門学校の先生方</string>
@@ -293,7 +304,7 @@
     <string name="memory_teacher_lose">「やるね…。ノート、ちゃんと取れてるじゃん」</string>
 
     <!-- 5F：よけゲーム -->
-    <string name="dodge_rule">【よけゲーム】四角の中を指でなぞると、ハートが動くよ。\n飛んでくる物をよけきれば、反撃できる！</string>
+    <string name="dodge_rule">【よけゲーム】画面のどこを指でなぞっても、ハートが動くよ。\n飛んでくる物をよけきれば、反撃できる！</string>
     <string name="dodge_wave">%1$sのこうげき！ よけろ！</string>
     <string name="dodge_hit">当たった！ %1$dのダメージ！</string>
     <string name="dodge_survived">よけきった！ 反撃！ %1$sに%2$dのダメージ！</string>

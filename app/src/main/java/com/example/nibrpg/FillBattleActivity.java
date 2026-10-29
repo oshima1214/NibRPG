@@ -136,6 +136,9 @@ public class FillBattleActivity extends AppCompatActivity {
         });
         // 一時停止ボタン（左上）とメニュー（つづける・リタイア）
         pauseMenu = new PauseMenu(this, () -> !finished, this::pauseBattle, this::resumeBattle, this::retire);
+        // 音：BGM（理事長戦はボスの曲。ステージが変わっても続けて流れる）と、バトル開始の音
+        Sound.bgm(this, boss ? R.raw.bgm_boss : BattleData.FLOOR_BGM[floor]); // 階ごとの曲
+        if (!boss || stage == 0) Sound.se(this, R.raw.se_battle_start);
 
         updateBars();
         refreshItems();
@@ -253,6 +256,7 @@ public class FillBattleActivity extends AppCompatActivity {
     private void onChoice(String c) {
         if (busy || filled.size() >= blanks.size()) return;
         filled.add(c);
+        Sound.se(this, R.raw.se_tile_place);
         showFilled();
         if (filled.size() == blanks.size()) check();
     }
@@ -261,12 +265,14 @@ public class FillBattleActivity extends AppCompatActivity {
     private void removeLast() {
         if (busy || filled.isEmpty()) return;
         filled.remove(filled.size() - 1);
+        Sound.se(this, R.raw.se_tile_remove);
         showFilled();
     }
 
     /** 入れた文字を全部消す */
     private void resetFilled() {
         if (busy) return;
+        if (!filled.isEmpty()) Sound.se(this, R.raw.se_tile_remove);
         filled.clear();
         showFilled();
     }
@@ -315,6 +321,8 @@ public class FillBattleActivity extends AppCompatActivity {
         shake(imgTeacher);
         txtMessage.setText(getString(critical ? R.string.battle_critical : R.string.battle_correct,
                 teacherName, damage));
+        Sound.se(this, R.raw.se_correct);
+        handler.postDelayed(() -> Sound.se(this, critical ? R.raw.se_critical : R.raw.se_hit_teacher), 180);
 
         if (bossStageClear()) return; // 理事長戦：次の問題へ
         if (teacherHp <= 0) {
@@ -332,6 +340,8 @@ public class FillBattleActivity extends AppCompatActivity {
         GameState.tookDamage = true; // 実績のため
         updateBars();
         flashRed();
+        Sound.se(this, R.raw.se_wrong);
+        handler.postDelayed(() -> Sound.se(this, R.raw.se_damage), 220);
 
         String[] taunts = getResources().getStringArray(tauntsId());
         long lineMs = TypeWriter.show(txtLine, taunts[random.nextInt(taunts.length)]);
@@ -349,6 +359,7 @@ public class FillBattleActivity extends AppCompatActivity {
 
     private void win() {
         finished = true;
+        Sound.jingle(this, R.raw.jg_win);
         Achievements.checkWin(this); // HPが残り1桁なら実績
         GameState.defeated[floor] = true;
         int reward = MapData.REWARDS[floor];
@@ -399,6 +410,7 @@ public class FillBattleActivity extends AppCompatActivity {
         GameState.hp = Math.min(GameState.maxHp, GameState.hp + ShopData.ITEMS[i].power);
         GameState.itemCounts[i]--;
         GameState.usedItem = true; // 実績のため
+        Sound.se(this, R.raw.se_heal);
         txtMessage.setText(getString(R.string.battle_item_used, ShopData.ITEMS[i].name, GameState.hp - before));
         updateBars();
         refreshItems();
@@ -454,11 +466,13 @@ public class FillBattleActivity extends AppCompatActivity {
     /** 一時停止：時間を止める（制限時間も減らない） */
     private void pauseBattle() {
         handler.pause();
+        Sound.pauseBgm();
     }
 
     /** 再開 */
     private void resumeBattle() {
         handler.resume();
+        Sound.resumeBgm();
     }
 
     /** リタイア：今のHPのままマップに戻る（先生のHPは元に戻る） */
@@ -471,6 +485,7 @@ public class FillBattleActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        Sound.pauseBgmSoon();
         // 画面を離れたら、一時停止する（もどってきたら、メニューの「つづける」で再開）
         if (!finished) pauseMenu.open();
     }
@@ -508,6 +523,7 @@ public class FillBattleActivity extends AppCompatActivity {
         updateBars();
         finished = true;
         long lineMs = TypeWriter.show(txtLine, R.string.boss_next_line);
+        Sound.se(this, R.raw.se_stage_next);
         txtMessage.setText(R.string.boss_next);
         handler.postDelayed(() -> {
             Intent intent = new Intent(this, BattleData.BOSS_STAGES[stage + 1]);

@@ -38,6 +38,11 @@ public class TypeWriter {
                 }
                 tv.setText(sp);
                 if (shown < n) {
+                    // 2文字に1回、ポッと鳴らす（空白や記号の「」は鳴らさない）
+                    char ch = s.charAt(shown);
+                    if (shown % 2 == 0 && ch != ' ' && ch != '　' && ch != '「' && ch != '」') {
+                        Sound.se(tv.getContext(), R.raw.se_text, 0.5f);
+                    }
                     shown++;
                     tv.postDelayed(this, CHAR_MS);
                 }

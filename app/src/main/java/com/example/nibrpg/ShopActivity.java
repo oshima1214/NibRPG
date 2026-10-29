@@ -63,7 +63,10 @@ public class ShopActivity extends AppCompatActivity {
         }
 
         // 窓口をはなれる → マップにもどる（マップの画面は開いたままなので、続きから）
-        findViewById(R.id.btnExit).setOnClickListener(v -> finish());
+        findViewById(R.id.btnExit).setOnClickListener(v -> {
+            Sound.se(this, R.raw.se_cancel);
+            finish();
+        });
 
         refresh();
     }
@@ -73,17 +76,21 @@ public class ShopActivity extends AppCompatActivity {
         ShopData.Goods g = ShopData.WEAPONS[i];
         if (GameState.weapon == i) {
             GameState.weapon = -1;                                   // 使用中をもう一度押すと、しまって素手にする
+            Sound.se(this, R.raw.se_cancel);
             txtTalk.setText(getString(R.string.reception_unequip, g.name));
         } else if (GameState.ownedWeapons[i]) {
             GameState.weapon = i;                                    // 持ちかえる（お金はかからない）
+            Sound.se(this, R.raw.se_equip);
             txtTalk.setText(getString(R.string.reception_equip, g.name));
         } else if (GameState.money < g.price) {
             txtTalk.setText(R.string.reception_no_money);
+            Sound.se(this, R.raw.se_no_money);
         } else {
             GameState.money -= g.price;
             GameState.moneySpent += g.price; // 実績のため
             GameState.ownedWeapons[i] = true;
             GameState.weapon = i;                                    // 買ったらすぐ使う
+            Sound.se(this, R.raw.se_buy);
             txtTalk.setText(getString(R.string.reception_bought, g.name));
             stamp(stamps[i]);
         }
@@ -127,6 +134,18 @@ public class ShopActivity extends AppCompatActivity {
                 if (GameState.money < ShopData.WEAPONS[i].price) b.setAlpha(0.4f); // お金が足りない
             }
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Sound.bgm(this, R.raw.bgm_shop);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Sound.pauseBgmSoon();
     }
 
     @Override
