@@ -27,6 +27,31 @@ public class CharacterSprite {
     // ボトムス：0 ズボン、1 スカート
     public int pantsStyle = 0;
 
+
+    // アクセサリー：0は装着なし
+    // 眼鏡：1=眼鏡、2=サングラス
+    public int glassesStyle = 0;
+
+    // ピアス：1=スタッド、2=リング
+    public int earringsStyle = 0;
+
+    // リボン：1=左、2=右、3=中央
+    public int ribbonStyle = 0;
+
+    // キャップ：1=前向き、2=後ろ向き
+    public int capStyle = 0;
+
+    // ネックレス：1=ペンダント、2=チェーン
+    public int necklaceStyle = 0;
+
+    // アクセサリーの色
+    public int glassesColor = 0xFF31343C;
+    public int earringsColor = 0xFFE4C36A;
+    public int ribbonColor = 0xFFE26786;
+    public int capColor = 0xFF557BA8;
+    public int necklaceColor = 0xFFE4C36A;
+
+
     // 絵の大きさ（ドット）：横18・縦48。先生と同じくらいの等身
     public static final int WIDTH = 18;
     public static final int HEIGHT = 48;
@@ -38,6 +63,25 @@ public class CharacterSprite {
     public static final int LEFT = 3;
 
     private final Paint paint = new Paint();
+
+
+    private final Paint glassesPaint =
+            new Paint(Paint.ANTI_ALIAS_FLAG);
+
+    // 眼鏡専用の細い線
+    private void thinLine(
+            Canvas c,
+            float x1, float y1,
+            float x2, float y2,
+            int color) {
+
+        glassesPaint.setColor(color);
+        glassesPaint.setStrokeWidth(0.5f);
+        glassesPaint.setStrokeCap(Paint.Cap.BUTT);
+
+        c.drawLine(x1, y1, x2, y2, glassesPaint);
+    }
+
 
     public CharacterSprite() {
         paint.setAntiAlias(false);
@@ -63,6 +107,20 @@ public class CharacterSprite {
         editor.putInt("style", hairStyle);
         editor.putInt("shirtStyle", shirtStyle);
         editor.putInt("pantsStyle", pantsStyle);
+
+
+        editor.putInt("glassesStyle", glassesStyle);
+        editor.putInt("earringsStyle", earringsStyle);
+        editor.putInt("ribbonStyle", ribbonStyle);
+        editor.putInt("capStyle", capStyle);
+        editor.putInt("necklaceStyle", necklaceStyle);
+
+        editor.putInt("glassesColor", glassesColor);
+        editor.putInt("earringsColor", earringsColor);
+        editor.putInt("ribbonColor", ribbonColor);
+        editor.putInt("capColor", capColor);
+        editor.putInt("necklaceColor", necklaceColor);
+
 
         editor.apply();
     }
@@ -110,6 +168,43 @@ public class CharacterSprite {
 
         sprite.pantsStyle =
                 Math.max(0, Math.min(1, sprite.pantsStyle));
+
+
+        sprite.glassesStyle =
+                Math.max(0, Math.min(2,
+                        pref.getInt("glassesStyle", 0)));
+
+        sprite.earringsStyle =
+                Math.max(0, Math.min(2,
+                        pref.getInt("earringsStyle", 0)));
+
+        sprite.ribbonStyle =
+                Math.max(0, Math.min(3,
+                        pref.getInt("ribbonStyle", 0)));
+
+        sprite.capStyle =
+                Math.max(0, Math.min(2,
+                        pref.getInt("capStyle", 0)));
+
+        sprite.necklaceStyle =
+                Math.max(0, Math.min(2,
+                        pref.getInt("necklaceStyle", 0)));
+
+        sprite.glassesColor =
+                pref.getInt("glassesColor", sprite.glassesColor);
+
+        sprite.earringsColor =
+                pref.getInt("earringsColor", sprite.earringsColor);
+
+        sprite.ribbonColor =
+                pref.getInt("ribbonColor", sprite.ribbonColor);
+
+        sprite.capColor =
+                pref.getInt("capColor", sprite.capColor);
+
+        sprite.necklaceColor =
+                pref.getInt("necklaceColor", sprite.necklaceColor);
+
 
         return sprite;
     }
@@ -287,6 +382,8 @@ public class CharacterSprite {
                 }
             }
             rect(c, 5, 2, 8, 3, light(hair));
+
+            drawAccessoriesFrontBack(c, true);
             return; // 後ろ向きは目を描かない
         }
 
@@ -345,6 +442,8 @@ public class CharacterSprite {
         rect(c, 10, 8, 11, 9, Color.WHITE);
         rect(c, 7, 10, 8, 11, eyes);
         rect(c, 11, 10, 12, 11, eyes);
+
+        drawAccessoriesFrontBack(c, false);
     }
 
     // 右向き（左向きはこれを反転して使う）
@@ -447,5 +546,171 @@ public class CharacterSprite {
         rect(c, 11, 8, 13, 11, EYE_DARK);
         rect(c, 11, 8, 12, 9, Color.WHITE);
         rect(c, 12, 10, 13, 11, eyes);
+        drawAccessoriesSide(c);
+
     }
+
+    // 正面・後ろ向きのアクセサリー描画
+    private void drawAccessoriesFrontBack(
+            Canvas c, boolean back) {
+
+        if (!back) {
+
+            // ネックレス
+            if (necklaceStyle > 0) {
+                rect(c, 6, 16, 7, 18, necklaceColor);
+                rect(c, 11, 16, 12, 18, necklaceColor);
+                rect(c, 7, 18, 11, 19, necklaceColor);
+
+                if (necklaceStyle == 1) {
+                    rect(c, 8, 19, 10, 22, necklaceColor);
+                    rect(c, 8, 20, 9, 21,
+                            light(necklaceColor));
+                }
+            }
+
+
+
+            // 眼鏡・サングラス
+            if (glassesStyle > 0) {
+
+                // サングラスの薄いレンズ
+                if (glassesStyle == 2) {
+                    rect(c, 5, 8, 8, 11, 0x6620262E);
+                    rect(c, 10, 8, 13, 11, 0x6620262E);
+                }
+
+                // 左側のフレーム
+                thinLine(c, 5, 7.5f, 8.5f, 7.5f, glassesColor);
+                thinLine(c, 5, 11.5f, 8.5f, 11.5f, glassesColor);
+                thinLine(c, 4.7f, 8, 4.7f, 11, glassesColor);
+                thinLine(c, 8.5f, 8, 8.5f, 11, glassesColor);
+
+                // 右側のフレーム
+                thinLine(c, 9.5f, 7.5f, 13, 7.5f, glassesColor);
+                thinLine(c, 9.5f, 11.5f, 13, 11.5f, glassesColor);
+                thinLine(c, 9.5f, 8, 9.5f, 11, glassesColor);
+                thinLine(c, 13.3f, 8, 13.3f, 11, glassesColor);
+
+                // 中央のブリッジ
+                thinLine(c, 8.5f, 8.5f, 9.5f, 8.5f, glassesColor);
+            }
+
+
+
+            // ピアス（耳の位置に調整）
+            if (earringsStyle == 1) {
+
+                // スタッドピアス
+                rect(c, 3, 9, 4, 10, earringsColor);
+                rect(c, 14, 9, 15, 10, earringsColor);
+
+            } else if (earringsStyle == 2) {
+
+                // 左耳：小さなリング
+                rect(c, 2, 9, 4, 10, earringsColor);
+                rect(c, 2, 10, 3, 12, earringsColor);
+                rect(c, 3, 11, 4, 12, earringsColor);
+
+                // 右耳：小さなリング
+                rect(c, 14, 9, 16, 10, earringsColor);
+                rect(c, 15, 10, 16, 12, earringsColor);
+                rect(c, 14, 11, 15, 12, earringsColor);
+            }
+
+
+        }
+
+        // リボン
+        if (ribbonStyle > 0) {
+            int mid = ribbonStyle == 1
+                    ? 3 : (ribbonStyle == 2 ? 14 : 9);
+
+            rect(c, mid - 2, 3, mid, 6, ribbonColor);
+            rect(c, mid, 4, mid + 1, 5, dark(ribbonColor));
+            rect(c, mid + 1, 3, mid + 3, 6, ribbonColor);
+            rect(c, mid - 1, 6, mid + 2, 7,
+                    dark(ribbonColor));
+        }
+
+        // キャップ
+        if (capStyle > 0) {
+            rect(c, 3, 0, 15, 4, capColor);
+            rect(c, 4, 0, 14, 1, light(capColor));
+            rect(c, 3, 3, 15, 5, dark(capColor));
+
+            if ((capStyle == 1 && !back)
+                    || (capStyle == 2 && back)) {
+                rect(c, 5, 5, 14, 6, dark(capColor));
+            }
+
+            if (capStyle == 2 && !back) {
+                rect(c, 8, 1, 10, 3, light(capColor));
+            }
+        }
+    }
+
+    // 横向きのアクセサリー描画
+    private void drawAccessoriesSide(Canvas c) {
+
+        if (necklaceStyle > 0) {
+            rect(c, 11, 16, 12, 19, necklaceColor);
+
+            if (necklaceStyle == 1) {
+                rect(c, 11, 19, 13, 21, necklaceColor);
+            }
+        }
+
+
+        // 横向きの眼鏡・サングラス
+        if (glassesStyle > 0) {
+
+            if (glassesStyle == 2) {
+                rect(c, 11, 8, 14, 11, 0x6620262E);
+            }
+
+            // 細いレンズフレーム
+            thinLine(c, 11, 7.5f, 14, 7.5f, glassesColor);
+            thinLine(c, 11, 11.5f, 14, 11.5f, glassesColor);
+            thinLine(c, 10.7f, 8, 10.7f, 11, glassesColor);
+            thinLine(c, 14.3f, 8, 14.3f, 11, glassesColor);
+
+            // 耳にかかる部分
+            thinLine(c, 7, 8.5f, 11, 8.5f, glassesColor);
+        }
+
+
+
+        // 横向きのピアス（耳の位置）
+        if (earringsStyle == 1) {
+
+            // スタッド
+            rect(c, 6, 9, 7, 10, earringsColor);
+
+        } else if (earringsStyle == 2) {
+
+            // 小さなリング
+            rect(c, 5, 9, 7, 10, earringsColor);
+            rect(c, 5, 10, 6, 12, earringsColor);
+            rect(c, 6, 11, 7, 12, earringsColor);
+        }
+
+
+        if (ribbonStyle > 0) {
+            rect(c, 2, 3, 5, 5, ribbonColor);
+            rect(c, 3, 5, 4, 7, dark(ribbonColor));
+        }
+
+        if (capStyle > 0) {
+            rect(c, 3, 0, 15, 4, capColor);
+            rect(c, 3, 3, 15, 5, dark(capColor));
+
+            if (capStyle == 1) {
+                rect(c, 13, 5, 17, 6, dark(capColor));
+            } else {
+                rect(c, 1, 4, 6, 5, dark(capColor));
+            }
+        }
+    }
+
 }
