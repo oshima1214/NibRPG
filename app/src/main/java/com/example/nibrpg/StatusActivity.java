@@ -79,14 +79,11 @@ public class StatusActivity extends AppCompatActivity {
         }
         txtHowTo.setText(sb);
 
-        // タイトルへもどる（1Fにいるときだけ。続きは、タイトルの「つづきから」で遊べる）
+        // タイトルへもどる（どの階からでもOK。続きは、タイトルの「つづきから」で今の場所から遊べる）
         TextView btnTitle = findViewById(R.id.btnTitle);
-        boolean onFirstFloor = (GameState.floor == 0);
-        btnTitle.setAlpha(onFirstFloor ? 1f : 0.4f);
-        ((TextView) findViewById(R.id.txtTitleNote)).setText(
-                onFirstFloor ? R.string.menu_title_note_ok : R.string.menu_title_note_ng);
+        ((TextView) findViewById(R.id.txtTitleNote)).setText(R.string.menu_title_note_ok);
         btnTitle.setOnClickListener(v -> {
-            if (GameState.floor != 0) return;
+            GameState.save(this); // 今の階・場所を保存してから
             Intent intent = new Intent(this, TitleActivity.class);
             // マップなど、開いている画面を全部閉じてからタイトルへ
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

@@ -2,9 +2,6 @@ package com.example.nibrpg;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.SystemClock;
 import android.view.Gravity;
 import android.view.View;
 import android.view.animation.CycleInterpolator;
@@ -39,7 +36,8 @@ public class MemoryBattleActivity extends AppCompatActivity {
     private static final long AFTER_HIT_MS = 1200;  // 正解のあと、次の板書までの時間
     private static final long AFTER_MISS_MS = 1800; // 失敗のあと、次の板書までの時間
 
-    private final Handler handler = new Handler(Looper.getMainLooper());
+    private final PauseHandler handler = new PauseHandler(); // 一時停止できるタイマー
+    private PauseMenu pauseMenu;                              // 一時停止ボタンとメニュー
     private final Random random = new Random();
 
     // ---- 先生 ----
@@ -143,13 +141,15 @@ public class MemoryBattleActivity extends AppCompatActivity {
         }
         setButtonsEnabled(false);
 
-        // 戦闘からは逃げられない（戻るボタンを押してもマップに戻らない）
+        // 戻るボタン：そのままマップには戻らず、一時停止メニューを出す（リタイアはメニューから）
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                if (!finished) txtMessage.setText(R.string.battle_no_escape);
+                if (!finished) pauseMenu.open();
             }
         });
+        // 一時停止ボタン（左上）とメニュー（つづける・リタイア）
+        pauseMenu = new PauseMenu(this, () -> !finished, this::pauseBattle, this::resumeBattle, this::retire);
 
         updateBars();
         refreshItems();
@@ -209,7 +209,7 @@ public class MemoryBattleActivity extends AppCompatActivity {
         txtBoard.setAlpha(1f);
         txtBoardLabel.setText(R.string.memory_label_answer);
         timeLimit = BattleData.MEMORY_BASE_TIME_MS + BattleData.MEMORY_PER_LETTER_MS * length;
-        startTime = SystemClock.uptimeMillis();
+        startTime = handler.now();
         answering = true;
         setButtonsEnabled(true);
         handler.post(tick);
@@ -230,7 +230,7 @@ public class MemoryBattleActivity extends AppCompatActivity {
         @Override
         public void run() {
             if (!answering || finished) return;
-            long elapsed = SystemClock.uptimeMillis() - startTime;
+            long elapsed = handler.now() - startTime;
             float left = Math.max(0f, 1f - elapsed / (float) timeLimit);
             barTime.setProgress((int) (left * barTime.getMax()));
             if (elapsed >= timeLimit) {
@@ -397,6 +397,32 @@ public class MemoryBattleActivity extends AppCompatActivity {
 
     private int dp(int value) {
         return Math.round(value * getResources().getDisplayMetrics().density);
+    }
+
+    // ===================== 一時停止・リタイア =====================
+
+    /** 一時停止：時間を止める（制限時間も減らない） */
+    private void pauseBattle() {
+        handler.pause();
+    }
+
+    /** 再開 */
+    private void resumeBattle() {
+        handler.resume();
+    }
+
+    /** リタイア：今のHPのままマップに戻る（先生のHPは元に戻る） */
+    private void retire() {
+        finished = true;
+        handler.removeCallbacksAndMessages(null);
+        finish();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // 画面を離れたら、一時停止する（もどってきたら、メニューの「つづける」で再開）
+        if (!finished) pauseMenu.open();
     }
 
     @Override

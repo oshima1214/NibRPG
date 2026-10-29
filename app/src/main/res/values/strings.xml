@@ -302,6 +302,13 @@
     <string name="dodge_phase2">%1$sが本気になった！ こうげきが激しくなる！</string>
     <string name="dodge_teacher_lose">「見事だ…。だが、さらなる高みを目指しなさい。この学校には、まだ上がいる…」</string>
     <!-- こうげきのときのセリフ（チョーク・ペン・マウス・パソコンの順） -->
+    <!-- 戦闘の一時停止メニュー -->
+    <string name="pause_button">停止</string>
+    <string name="pause_title">一時停止中</string>
+    <string name="pause_continue">つづける</string>
+    <string name="pause_retire">リタイア</string>
+    <string name="pause_retire_confirm">本当にリタイアする</string>
+    <string name="pause_retire_note">リタイアすると、今のHPのままマップに戻ります。\n先生のHPは元に戻ります。</string>
     <!-- 校長戦の攻撃パターンのセリフ（ハンコ・チャイム・時計の針・マイクの音波・針＋ハンコ・書類の山・回るチャイムの順） -->
     <string-array name="principal_pattern_lines">
         <item>「では、一枚ずつ確認していきましょうか。」</item>

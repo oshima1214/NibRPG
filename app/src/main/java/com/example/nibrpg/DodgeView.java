@@ -522,6 +522,38 @@ public class DodgeView extends View {
         return s;
     }
 
+    // ---- 一時停止 ----
+    private boolean paused = false;
+    private long pausedAt;
+
+    /** 一時停止：動きを止める（絵はそのまま表示しておく） */
+    public void pause() {
+        if (paused) return;
+        paused = true;
+        pausedAt = SystemClock.uptimeMillis();
+    }
+
+    /** 再開：止めていた時間の分だけ、全部の時刻を後ろにずらして、続きから動かす */
+    public void resume() {
+        if (!paused) return;
+        paused = false;
+        long d = SystemClock.uptimeMillis() - pausedAt;
+        waveStart += d;
+        lastFrame += d;
+        patternNext += d;
+        for (int i = 0; i < nextSpawn.length; i++) nextSpawn[i] += d;
+        guardUntil += d;
+        if (shrinkStart >= 0) shrinkStart += d;
+        for (Shot s : shots) {
+            s.born += d;
+            s.dropAt += d;
+            s.lockAt += d;
+            s.dashAt += d;
+            if (s.flipAt != Long.MAX_VALUE) s.flipAt += d;
+        }
+        postInvalidateOnAnimation();
+    }
+
     /** こうげきを止める（勝ち負けが決まったときなど） */
     public void stop() {
         running = false;
@@ -561,10 +593,11 @@ public class DodgeView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        long now = SystemClock.uptimeMillis();
+        // 一時停止中は、止めた時刻の絵をそのまま描く（動かさない）
+        long now = paused ? pausedAt : SystemClock.uptimeMillis();
         // 四角をせまくしている途中
         boolean shrinking = false;
-        if (shrinkStart >= 0) {
+        if (shrinkStart >= 0 && !paused) {
             float p = Math.min(1f, (now - shrinkStart) / (float) SHRINK_MS);
             float e = 1f - (1f - p) * (1f - p) * (1f - p); // はじめ速く、最後ゆっくり
             arenaScale = scaleFrom + (scaleTo - scaleFrom) * e;
@@ -572,7 +605,7 @@ public class DodgeView extends View {
             shrinking = p < 1f;
             if (!shrinking) shrinkStart = -1;
         }
-        if (running) {
+        if (running && !paused) {
             float dt = Math.min(50, now - lastFrame) / 1000f;
             lastFrame = now;
             update(now, dt);
@@ -614,7 +647,7 @@ public class DodgeView extends View {
         }
         canvas.drawRect(arena, frame);
 
-        if (running || shrinking) postInvalidateOnAnimation();
+        if ((running || shrinking) && !paused) postInvalidateOnAnimation();
     }
 
     /** 1コマ分すすめる */
@@ -1061,6 +1094,7 @@ public class DodgeView extends View {
                 getParent().requestDisallowInterceptTouchEvent(true);
                 return true;
             case MotionEvent.ACTION_MOVE:
+                if (paused) return true; // 止めている間は、ハートを動かさない
                 // 指が動いた分だけ、ハートを動かす（四角の外には出ない）
                 float half = heartSize / 2;
                 heartX = Math.max(arena.left + half, Math.min(arena.right - half, heartX + x - lastTouchX));

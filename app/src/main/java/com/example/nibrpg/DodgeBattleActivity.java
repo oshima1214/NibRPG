@@ -2,8 +2,6 @@ package com.example.nibrpg;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.SystemClock;
 import android.view.View;
 import android.view.animation.CycleInterpolator;
@@ -39,7 +37,8 @@ public class DodgeBattleActivity extends AppCompatActivity {
     private static final int[] PRINCIPAL_PHASE1 = { DodgeView.P_STAMP, DodgeView.P_CHIME, DodgeView.P_CLOCK }; // 校長：第1形態
     private static final int[] PRINCIPAL_PHASE2 = { DodgeView.P_CLOCK_STAMP, DodgeView.P_PAPERS, DodgeView.P_CHIME_SPIN }; // 校長：第2形態
 
-    private final Handler handler = new Handler(Looper.getMainLooper());
+    private final PauseHandler handler = new PauseHandler(); // 一時停止できるタイマー
+    private PauseMenu pauseMenu;                              // 一時停止ボタンとメニュー
     private final Random random = new Random();
 
     // ---- 先生 ----
@@ -60,7 +59,6 @@ public class DodgeBattleActivity extends AppCompatActivity {
     private int keptWeapon = -1;   // 理事長に没収された装備（負けたら返す）
     private int[] keptItems = null; // 理事長に没収されたアイテムの数（負けたら返す）
     private boolean finished = false; // 勝ち負けが決まったら true
-    private boolean paused = false;   // 画面を離れて、こうげきを止めたか
 
     // ---- 画面の部品 ----
     private DodgeView dodgeView;
@@ -147,13 +145,15 @@ public class DodgeBattleActivity extends AppCompatActivity {
             }
         });
 
-        // 戦闘からは逃げられない（戻るボタンを押してもマップに戻らない）
+        // 戻るボタン：そのままマップには戻らず、一時停止メニューを出す（リタイアはメニューから）
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                if (!finished) txtMessage.setText(R.string.battle_no_escape);
+                if (!finished) pauseMenu.open();
             }
         });
+        // 一時停止ボタン（左上）とメニュー（つづける・リタイア）
+        pauseMenu = new PauseMenu(this, () -> !finished, this::pauseBattle, this::resumeBattle, this::retire);
 
         updateBars();
         refreshItems();
@@ -228,7 +228,7 @@ public class DodgeBattleActivity extends AppCompatActivity {
 
     /** こうげきの時間をはかり始める */
     private void beginWave() {
-        waveStart = SystemClock.uptimeMillis();
+        waveStart = handler.now();
         inWave = true;
         handler.post(tick);
     }
@@ -238,7 +238,7 @@ public class DodgeBattleActivity extends AppCompatActivity {
         @Override
         public void run() {
             if (!inWave || finished) return;
-            long elapsed = SystemClock.uptimeMillis() - waveStart;
+            long elapsed = handler.now() - waveStart;
             float left = Math.max(0f, 1f - elapsed / (float) waveLength);
             barTime.setProgress((int) (left * barTime.getMax()));
             handler.postDelayed(this, TICK_MS);
@@ -336,12 +336,7 @@ public class DodgeBattleActivity extends AppCompatActivity {
     }
 
     private void lose() {
-        // 理事長戦で没収した装備とアイテムを返す
-        if (keptItems != null) {
-            GameState.weapon = keptWeapon;
-            GameState.itemCounts = keptItems;
-            keptItems = null;
-        }
+        returnItems();
         // 攻略失敗画面へ（後ろに残っているマップの画面も閉じる）
         Intent intent = new Intent(this, GameOverActivity.class);
         intent.putExtra(GameOverActivity.EXTRA_TEACHER, boss ? BattleData.BOSS_GAME_OVER : floor);
@@ -443,21 +438,39 @@ public class DodgeBattleActivity extends AppCompatActivity {
         View root = findViewById(R.id.main);
         root.setTranslationX(0); // ゆれている途中で離れても、元の位置にもどす
         root.setTranslationY(0);
-        // 画面を離れたら、こうげきを止める（もどってきたら、次のこうげきから）
-        if (!finished) {
-            inWave = false;
-            dodgeView.stop();
-            handler.removeCallbacksAndMessages(null);
-            paused = true;
-        }
+        // 画面を離れたら、一時停止する（もどってきたら、メニューの「つづける」で再開）
+        if (!finished) pauseMenu.open();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (paused && !finished) {
-            paused = false;
-            handler.postDelayed(this::nextWave, BETWEEN_MS);
+    // ===================== 一時停止・リタイア =====================
+
+    /** 一時停止：時間と、よける四角の動きを止める */
+    private void pauseBattle() {
+        handler.pause();
+        dodgeView.pause();
+    }
+
+    /** 再開 */
+    private void resumeBattle() {
+        handler.resume();
+        dodgeView.resume();
+    }
+
+    /** リタイア：今のHPのままマップに戻る（先生のHPは元に戻る） */
+    private void retire() {
+        finished = true;
+        handler.removeCallbacksAndMessages(null);
+        dodgeView.stop();
+        returnItems();
+        finish();
+    }
+
+    /** 理事長戦で没収した装備とアイテムを返す */
+    private void returnItems() {
+        if (keptItems != null) {
+            GameState.weapon = keptWeapon;
+            GameState.itemCounts = keptItems;
+            keptItems = null;
         }
     }
 
