@@ -83,14 +83,55 @@
             <TextView
                 style="@style/EndName"
                 android:text="@string/end_tool_ai1" />
+            <TextView
+                style="@style/EndNote"
+                android:text="@string/end_tool_ai1_role" />
 
             <TextView
                 style="@style/EndName"
                 android:text="@string/end_tool_ai2" />
+            <TextView
+                style="@style/EndNote"
+                android:text="@string/end_tool_ai2_role" />
 
             <TextView
                 style="@style/EndName"
                 android:text="@string/end_tool_ai3" />
+
+            <TextView
+                style="@style/EndNote"
+                android:text="@string/end_tool_ai3_role" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="80dp" />
+
+            <!-- サウンド：使わせてもらった音のサイト -->
+            <TextView
+                style="@style/EndHead"
+                android:text="@string/end_head_sound" />
+
+            <TextView
+                style="@style/EndLabel"
+                android:text="@string/end_label_bgm" />
+
+            <TextView
+                style="@style/EndName"
+                android:text="@string/end_sound_bgm" />
+            <TextView
+                style="@style/EndNote"
+                android:text="@string/end_sound_bgm_url" />
+
+            <TextView
+                style="@style/EndLabel"
+                android:text="@string/end_label_se" />
+
+            <TextView
+                style="@style/EndName"
+                android:text="@string/end_sound_se" />
+            <TextView
+                style="@style/EndNote"
+                android:text="@string/end_sound_se_url" />
 
             <Space
                 android:layout_width="match_parent"

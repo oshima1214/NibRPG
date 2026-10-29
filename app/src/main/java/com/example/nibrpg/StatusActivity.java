@@ -97,12 +97,14 @@ public class StatusActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        Sound.resumeBgm(); // マップの曲をそのまま続ける
         handler.post(walk);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        Sound.pauseBgmSoon();
         handler.removeCallbacksAndMessages(null);
     }
 

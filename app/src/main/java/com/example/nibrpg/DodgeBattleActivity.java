@@ -3,6 +3,7 @@ package com.example.nibrpg;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.CycleInterpolator;
 import android.view.animation.TranslateAnimation;
@@ -154,6 +155,9 @@ public class DodgeBattleActivity extends AppCompatActivity {
         });
         // 一時停止ボタン（左上）とメニュー（つづける・リタイア）
         pauseMenu = new PauseMenu(this, () -> !finished, this::pauseBattle, this::resumeBattle, this::retire);
+        // 音：BGM（理事長戦は、よけゲームから第2形態の曲に変わる）と、バトル開始の音
+        Sound.bgm(this, boss ? R.raw.bgm_boss2 : R.raw.bgm_principal);
+        if (!boss || stage == 0) Sound.se(this, R.raw.se_battle_start);
 
         updateBars();
         refreshItems();
@@ -168,6 +172,7 @@ public class DodgeBattleActivity extends AppCompatActivity {
     /** 理事長戦：装備とアイテムを没収する（負けたら lose() で返す） */
     private void confiscate() {
         if (finished) return;
+        Sound.se(this, R.raw.se_confiscate);
         keptWeapon = GameState.weapon;
         keptItems = GameState.itemCounts.clone();
         GameState.weapon = -1; // 素手
@@ -253,6 +258,7 @@ public class DodgeBattleActivity extends AppCompatActivity {
         GameState.tookDamage = true; // 実績のため
         updateBars();
         flashRed();
+        Sound.se(this, R.raw.se_damage);
         if (boss) screenShake(10, 350); // 当たった衝撃
         txtMessage.setText(getString(R.string.dodge_hit, damage));
 
@@ -276,6 +282,7 @@ public class DodgeBattleActivity extends AppCompatActivity {
         teacherHp = Math.max(0, teacherHp - damage);
         updateBars();
         shake(imgTeacher);
+        Sound.se(this, noHit ? R.raw.se_critical : R.raw.se_hit_teacher);
         txtMessage.setText(getString(noHit ? R.string.dodge_perfect : R.string.dodge_survived,
                 teacherName, damage));
 
@@ -289,6 +296,7 @@ public class DodgeBattleActivity extends AppCompatActivity {
             shrunk = true;
             dodgeView.shrinkArena(BattleData.BOSS_SHRINK_RATE);
             screenShake(14, 700);
+            Sound.se(this, R.raw.se_shrink);
             flashRed();
             long lineMs = TypeWriter.show(txtLine, R.string.boss_shrink_line);
             txtMessage.setText(R.string.boss_shrink);
@@ -298,6 +306,8 @@ public class DodgeBattleActivity extends AppCompatActivity {
         // HPが半分を切ったら、第2形態へ
         if (!phase2 && teacherHp * 2 <= teacherMaxHp) {
             phase2 = true;
+            Sound.se(this, R.raw.se_phase2);
+            Sound.bgm(this, R.raw.bgm_principal2); // 第2形態の曲へ
             long lineMs = TypeWriter.show(txtLine, R.string.dodge_phase2_line);
             txtMessage.setText(getString(R.string.dodge_phase2, teacherName));
             shake(findViewById(R.id.main));
@@ -315,6 +325,7 @@ public class DodgeBattleActivity extends AppCompatActivity {
             bossWin();
             return;
         }
+        Sound.jingle(this, R.raw.jg_win);
         Achievements.checkWin(this); // HPが残り1桁なら実績
         dodgeView.stop();
         GameState.defeated[floor] = true;
@@ -375,6 +386,7 @@ public class DodgeBattleActivity extends AppCompatActivity {
         GameState.hp = Math.min(GameState.maxHp, GameState.hp + ShopData.ITEMS[i].power);
         GameState.itemCounts[i]--;
         GameState.usedItem = true; // 実績のため
+        Sound.se(this, R.raw.se_heal);
         txtMessage.setText(getString(R.string.battle_item_used, ShopData.ITEMS[i].name, GameState.hp - before));
         updateBars();
         refreshItems();
@@ -435,6 +447,7 @@ public class DodgeBattleActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        Sound.pauseBgmSoon();
         View root = findViewById(R.id.main);
         root.setTranslationX(0); // ゆれている途中で離れても、元の位置にもどす
         root.setTranslationY(0);
@@ -442,17 +455,77 @@ public class DodgeBattleActivity extends AppCompatActivity {
         if (!finished) pauseMenu.open();
     }
 
+    // ===================== 画面全体でハートを動かす =====================
+
+    private boolean dragging = false;  // 今、ハートを動かすためになぞっているか
+    private float lastRawX, lastRawY;  // 1つ前の指の位置（画面全体での位置）
+
+    /**
+     * 画面のどこをなぞっても、ハートが動くようにする（よける四角の外でもOK）。
+     * ただし、道具・一時停止・結果のボタンの上で押したときは、ふつうにボタンを押す
+     */
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent e) {
+        if (finished || pauseMenu == null || pauseMenu.isOpen()) {
+            dragging = false;
+            return super.dispatchTouchEvent(e);
+        }
+        float x = e.getRawX();
+        float y = e.getRawY();
+        switch (e.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN:
+                dragging = !isOnButton(x, y);
+                if (!dragging) return super.dispatchTouchEvent(e);
+                lastRawX = x;
+                lastRawY = y;
+                return true;
+            case MotionEvent.ACTION_MOVE:
+                if (!dragging) return super.dispatchTouchEvent(e);
+                dodgeView.dragBy(x - lastRawX, y - lastRawY);
+                lastRawX = x;
+                lastRawY = y;
+                return true;
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                if (!dragging) return super.dispatchTouchEvent(e);
+                dragging = false;
+                return true;
+            default:
+                return dragging || super.dispatchTouchEvent(e);
+        }
+    }
+
+    /** 画面の (x, y) に、押せるボタン（一時停止・道具・結果）があるか */
+    private boolean isOnButton(float x, float y) {
+        if (pauseMenu.isOnButton(x, y)) return true;
+        if (hit(findViewById(R.id.resultBox), x, y)) return true;
+        for (int i = 0; i < itemRow.getChildCount(); i++) {
+            if (hit(itemRow.getChildAt(i), x, y)) return true;
+        }
+        return false;
+    }
+
+    /** 画面の (x, y) が、ビュー v の上か */
+    private static boolean hit(View v, float x, float y) {
+        if (v == null || !v.isShown()) return false;
+        int[] p = new int[2];
+        v.getLocationOnScreen(p);
+        return x >= p[0] && x < p[0] + v.getWidth() && y >= p[1] && y < p[1] + v.getHeight();
+    }
+
     // ===================== 一時停止・リタイア =====================
 
     /** 一時停止：時間と、よける四角の動きを止める */
     private void pauseBattle() {
         handler.pause();
+        Sound.pauseBgm();
         dodgeView.pause();
     }
 
     /** 再開 */
     private void resumeBattle() {
         handler.resume();
+        Sound.resumeBgm();
         dodgeView.resume();
     }
 
@@ -507,6 +580,7 @@ public class DodgeBattleActivity extends AppCompatActivity {
         updateBars();
         finished = true;
         long lineMs = TypeWriter.show(txtLine, R.string.boss_next_line);
+        Sound.se(this, R.raw.se_stage_next);
         txtMessage.setText(R.string.boss_next);
         handler.postDelayed(() -> {
             Intent intent = new Intent(this, BattleData.BOSS_STAGES[stage + 1]);
@@ -521,6 +595,7 @@ public class DodgeBattleActivity extends AppCompatActivity {
     /** 理事長に勝った：実績を解除して、実績以外のデータをリセットしてタイトルへ */
     private void bossWin() {
         dodgeView.stop();
+        Sound.jingle(this, R.raw.jg_clear);
         Achievements.unlock(this, Achievements.BOSS_CLEAR);
         TypeWriter.show(txtLine, R.string.boss_lose_line);
         ((TextView) findViewById(R.id.txtResult)).setText(R.string.boss_win);

@@ -44,6 +44,7 @@ public class TitleActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_title);
         GameState.loadOnce(this); // アプリを開いたときに、セーブデータを読みこむ
+        Sound.init(this);         // 効果音を読みこんでおく
         // 画面のふち（ステータスバーなど）に文字がかぶらないようにする
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -67,10 +68,14 @@ public class TitleActivity extends AppCompatActivity {
         }
 
         // つづきから → 1Fの、さっきいた場所から
-        btnContinue.setOnClickListener(v -> goTo(MainActivity.class));
+        btnContinue.setOnClickListener(v -> {
+            Sound.se(this, R.raw.se_ok);
+            goTo(MainActivity.class);
+        });
 
         // はじめる → 最初から。途中なら「本当にいい？」と聞く
         btnStart.setOnClickListener(v -> {
+            Sound.se(this, R.raw.se_ok);
             if (!GameState.playing) {
                 startNewGame();
                 return;
@@ -86,7 +91,10 @@ public class TitleActivity extends AppCompatActivity {
         });
 
         // 見た目を変える → キャラクリ（タイトルは閉じないので、終わるとここにもどる）
-        btnChara.setOnClickListener(v -> startActivity(new Intent(this, CharacterCreate.class)));
+        btnChara.setOnClickListener(v -> {
+            Sound.se(this, R.raw.se_ok);
+            startActivity(new Intent(this, CharacterCreate.class));
+        });
 
         // クリア後（エンドロールのあと）：理事長室の鍵を手に入れたことを知らせる（1回だけ）
         if (GameState.keyNotice) {
@@ -147,6 +155,8 @@ public class TitleActivity extends AppCompatActivity {
      *   画面をタップ：文字が出ている途中なら全部出す。出きっていたら閉じる
      */
     private void showKeyNotice() {
+        noticeShowing = true;
+        Sound.jingle(this, R.raw.jg_key); // ふしぎな音
         float dp = getResources().getDisplayMetrics().density;
         Typeface dot = ResourcesCompat.getFont(this, R.font.dotgothic16);
         String body = getString(R.string.boss_key_msg);
@@ -226,6 +236,8 @@ public class TitleActivity extends AppCompatActivity {
                 showNextMark(next);
             } else {
                 root.removeView(overlay);
+                noticeShowing = false;
+                Sound.bgm(this, R.raw.bgm_title);
             }
         });
     }
@@ -247,6 +259,21 @@ public class TitleActivity extends AppCompatActivity {
         blink.setRepeatMode(Animation.REVERSE);
         blink.setRepeatCount(Animation.INFINITE);
         next.startAnimation(blink);
+    }
+
+    private boolean noticeShowing = false; // 鍵のお知らせを出しているか（その間はBGMを流さない）
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (noticeShowing) Sound.resumeJingle();
+        else Sound.bgm(this, R.raw.bgm_title);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Sound.pauseBgmSoon();
     }
 
     @Override
