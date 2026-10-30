@@ -425,18 +425,7 @@
         <item>【先生たち】\n上の階には、先生たちが待ちかまえている。左の階段から上へ進もう。\n先生に勝つと、さらに上の階へ行けるようになるよ！（4/4）</item>
     </string-array>
 
-    <!-- キャラクリエイト -->
-    <string name="chara_title">見た目を決めよう</string>
-    <string name="chara_turn">向き</string>
-    <string name="chara_tab_hair">髪</string>
-    <string name="chara_tab_eye">目</string>
-    <string name="chara_tab_cloth">服</string>
-    <string name="chara_hex_hint">RRGGBB</string>
-    <string name="chara_rgb">R %1$d  G %2$d  B %3$d</string>
-    <string name="chara_presets">基本色</string>
-    <string name="chara_default">デフォルトに戻す</string>
-    <string name="chara_cancel">やめる</string>
-    <string name="chara_ok">決定</string>
+    <!-- マップのメニューボタン -->
     <string name="btn_menu">メニュー</string>
 
     <!-- メニュー画面 -->
